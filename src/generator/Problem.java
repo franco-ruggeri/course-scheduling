@@ -11,6 +11,7 @@ public class Problem {
     //each int[] is the array of the courses the students will take
     private ArrayList<int[]> students;
 
+
     // each course needs to happen x amount of times
     private int[] courses;
 }
