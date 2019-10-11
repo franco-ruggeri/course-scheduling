@@ -3,15 +3,51 @@ import java.util.Random;
 
 public class Generator {
     public static void main(String[] args) {
-        final Generator generator = new Generator();
+        final Generator generator = new Generator(
+                new int[]{1, 100},//students
+                new int[]{1, 100},//courses
+                new int[]{1, 100},//timeSlots
+                new int[]{1, 100}//classrooms
+                );
         for (int i = 0; i < 20; i++) {
             final Problem oneProblem = generator.generate();
             String path = "problem_" + i + ".txt";
             Generator.saveProblem(oneProblem, path);
         }
     }
+    private final int[] rangeStudents;
+    private final int[] rangeCourses;
+    private final int[] rangeTimeSlots;
+    private final int[] rangeClassrooms;
 
+    private final Random rnd = new Random();
+
+    public Generator(final int[] rangeStudents, final int[] rangeCourses, final int[] rangeTimeSlots, final int[] rangeClassrooms) {
+        this.rangeStudents = rangeStudents;
+        this.rangeCourses = rangeCourses;
+        this.rangeTimeSlots = rangeTimeSlots;
+        this.rangeClassrooms = rangeClassrooms;
+    }
+
+    public Problem generate() {
+        final Problem p = new Problem(
+                getRndNumber(rangeStudents),
+                getRndNumber(rangeCourses),
+                getRndNumber(rangeTimeSlots),
+                getRndNumber(rangeClassrooms)
+                );
+
+
+
+        return p;
+    }
     //read from a file and outputs the problem
+
+    private int getRndNumber(final int[] range){
+        final int diff = range[1] - range[0];
+        return range[0] + rnd.nextInt(diff);
+    }
+
     static Problem readProblem(final String loc) {
 
         return null;
@@ -29,21 +65,6 @@ public class Generator {
 
     static void saveProblem(final Problem p, final String loc) {
 
-    }
-
-    public Generator() {
-
-    }
-
-    public Problem generate() {
-        Random random = new Random();
-        int min =20;
-        int max =50;
-        int timeslotsCount =  random.nextInt((max - min)+1) +min;
-        int classRoomCount = random.nextInt((max - min)+1) +min;
-        Problem newProblem = new Problem(timeslotsCount ,classRoomCount);
-
-        return newProblem;
     }
 
 }
