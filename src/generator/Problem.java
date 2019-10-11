@@ -24,7 +24,7 @@ public class Problem {
     }
 
     public String toString(){
-        String s = "#Courses: " + courseCount + "\t#TimeSlots: " + timeslotsCount + "\t#ClassRoom: " + classroomCount +
+        String s = "#Courses: " + courseCount + "\t#TimeSlots: " + timeslotsCount + "\t#Classrooms: " + classroomCount +
                 "\t#Students: " + studentCount + "\n";
         s+= "Courses:\n";
         s+="[";
