@@ -1,6 +1,8 @@
 package generator;
 
 import java.util.Random;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class Generator {
     public static void main(String[] args) {
@@ -10,6 +12,7 @@ public class Generator {
                 new int[]{1, 100},  //timeSlots
                 new int[]{1, 100},  //classrooms
                 new int[]{1, 100},  //rangeStudentsCourseCount
+                new int[]{1000, 10000}, // rangeIndexOfCourse
                 new int[]{1, 100}   //rangeCoursesLecturesCount
         );
         for (int i = 0; i < 1; i++) {
@@ -26,18 +29,20 @@ public class Generator {
     private final int[] rangeTimeSlots;
     private final int[] rangeClassrooms;
     private final int[] rangeStudentsCourseCount;
+    private final int[] rangeIndexOfCourse;
     private final int[] rangeCoursesLecturesCount;
 
     private final Random rnd = new Random();
 
     public Generator(final int[] rangeStudents, final int[] rangeNumCourses, final int[] rangeTimeSlots,
-                     final int[] rangeClassrooms, final int[] rangeStudentsCourseCount,
+                     final int[] rangeClassrooms, final int[] rangeStudentsCourseCount, final int[] rangeIndexOfCourse,
                      final int[] rangeCoursesLecturesCount) {
         this.rangeStudents = rangeStudents;
         this.rangeCourses = rangeNumCourses;
         this.rangeTimeSlots = rangeTimeSlots;
         this.rangeClassrooms = rangeClassrooms;
         this.rangeStudentsCourseCount = rangeStudentsCourseCount;
+        this.rangeIndexOfCourse = rangeIndexOfCourse;
         this.rangeCoursesLecturesCount = rangeCoursesLecturesCount;
     }
 
@@ -49,25 +54,30 @@ public class Generator {
                 getRndNumber(rangeClassrooms)
         );
 
-        generateStudents(p.getStudents(), p.getCourseCount());
-        generateCourses(p.getCourses());
+        generateCoursePerStudents(p.getStudents(), p.getCourseCount());
+        generateNumOfLecturesPerCourses(p.getCourses());
         return p;
     }
-
-    // 
-    private void generateStudents(final int[][] s, final int courseCount) {
+    //
+    private void generateCoursePerStudents(final int[][] s, final int courseCount) {
         final int studentCount = s.length;
+        ArrayList<Integer> courseList = new ArrayList<Integer>();
+        for (int courseIndex = 1; courseIndex <= courseCount; courseIndex++) {
+            courseList.add(courseIndex);
+        }
+
         for (int i = 0; i < studentCount; i++) {
             final int registeredCoursesCount = getRndNumber(rangeStudentsCourseCount);
             s[i] = new int[registeredCoursesCount];
+            Collections.shuffle(courseList);
             for (int j = 0; j < registeredCoursesCount; j++) {
-                s[i][j] = rnd.nextInt(courseCount) + 1;
+                s[i][j] = courseList.get(j);
             }
         }
     }
 
     //courseLectureCount
-    private void generateCourses(final int[] courses) {
+    private void generateNumOfLecturesPerCourses(final int[] courses) {
         final int len = courses.length;
         for (int i = 0; i < len; i++) {
             courses[i] = getRndNumber(rangeCoursesLecturesCount);

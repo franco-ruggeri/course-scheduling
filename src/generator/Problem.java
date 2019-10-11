@@ -9,6 +9,7 @@ public class Problem {
     private final int classroomCount;
 
     //each int[] is the array of the courses the students will take
+    // first value is index of student, second value is the list of index of a course
     private final int[][] students;
 
     // each course needs to happen x amount of times
