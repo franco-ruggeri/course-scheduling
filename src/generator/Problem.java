@@ -25,14 +25,17 @@ public class Problem {
 
     public String toString(){
         String s = "#Courses: " + courseCount + "\t#TimeSlots: " + timeslotsCount + "\t#ClassRoom: " + classroomCount +
-                "\n#Students: " + studentCount + "\n";
+                "\t#Students: " + studentCount + "\n";
+        s+= "Courses:\n";
         s+="[";
         for (int i = 0; i < courseCount; i++) {
             s+= " " + courses[i];
         }
         s+= " ]\n";
+
+        s+= "Students: \n";
         for (int i = 0; i < studentCount; i++) {
-            s += i + ":: [";
+            s += i + "\t:: [";
             final int sLength = students[i].length;
             for (int j = 0; j < sLength; j++) {
                 s += " " + students[i][j];
