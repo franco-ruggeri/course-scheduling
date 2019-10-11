@@ -12,7 +12,6 @@ public class Generator {
                 new int[]{1, 100},  //timeSlots
                 new int[]{1, 100},  //classrooms
                 new int[]{1, 100},  //rangeStudentsCourseCount
-                new int[]{1000, 10000}, // rangeIndexOfCourse
                 new int[]{1, 100}   //rangeCoursesLecturesCount
         );
         for (int i = 0; i < 1; i++) {
@@ -29,20 +28,18 @@ public class Generator {
     private final int[] rangeTimeSlots;
     private final int[] rangeClassrooms;
     private final int[] rangeStudentsCourseCount;
-    private final int[] rangeIndexOfCourse;
     private final int[] rangeCoursesLecturesCount;
 
     private final Random rnd = new Random();
 
     public Generator(final int[] rangeStudents, final int[] rangeNumCourses, final int[] rangeTimeSlots,
-                     final int[] rangeClassrooms, final int[] rangeStudentsCourseCount, final int[] rangeIndexOfCourse,
+                     final int[] rangeClassrooms, final int[] rangeStudentsCourseCount,
                      final int[] rangeCoursesLecturesCount) {
         this.rangeStudents = rangeStudents;
         this.rangeCourses = rangeNumCourses;
         this.rangeTimeSlots = rangeTimeSlots;
         this.rangeClassrooms = rangeClassrooms;
         this.rangeStudentsCourseCount = rangeStudentsCourseCount;
-        this.rangeIndexOfCourse = rangeIndexOfCourse;
         this.rangeCoursesLecturesCount = rangeCoursesLecturesCount;
     }
 
