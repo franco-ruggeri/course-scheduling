@@ -1,23 +1,25 @@
 package generator;
+
 import java.util.Random;
 
 public class Generator {
     public static void main(String[] args) {
         final Generator generator = new Generator(
                 new int[]{1, 100},  //students
-                new int[]{1, 100},  //courses
+                new int[]{100, 1000},  //courses
                 new int[]{1, 100},  //timeSlots
                 new int[]{1, 100},  //classrooms
                 new int[]{1, 100},  //rangeStudentsCourseCount
                 new int[]{1, 100}   //rangeCoursesLecturesCount
-                );
+        );
         for (int i = 0; i < 1; i++) {
             final Problem p = generator.generate();
             System.out.println(p.toString());
-//            String path = "problem_" + i + ".txt";
+//           String path = "problem_" + i + ".txt";
 //            Generator.saveProblem(oneProblem, path);
         }
     }
+
     //0 means no course
     private final int[] rangeStudents;
     private final int[] rangeCourses;
@@ -28,11 +30,11 @@ public class Generator {
 
     private final Random rnd = new Random();
 
-    public Generator(final int[] rangeStudents, final int[] rangeCourses, final int[] rangeTimeSlots,
+    public Generator(final int[] rangeStudents, final int[] rangeNumCourses, final int[] rangeTimeSlots,
                      final int[] rangeClassrooms, final int[] rangeStudentsCourseCount,
                      final int[] rangeCoursesLecturesCount) {
         this.rangeStudents = rangeStudents;
-        this.rangeCourses = rangeCourses;
+        this.rangeCourses = rangeNumCourses;
         this.rangeTimeSlots = rangeTimeSlots;
         this.rangeClassrooms = rangeClassrooms;
         this.rangeStudentsCourseCount = rangeStudentsCourseCount;
@@ -45,13 +47,14 @@ public class Generator {
                 getRndNumber(rangeCourses),
                 getRndNumber(rangeTimeSlots),
                 getRndNumber(rangeClassrooms)
-                );
+        );
 
         generateStudents(p.getStudents(), p.getCourseCount());
         generateCourses(p.getCourses());
         return p;
     }
 
+    // 
     private void generateStudents(final int[][] s, final int courseCount) {
         final int studentCount = s.length;
         for (int i = 0; i < studentCount; i++) {
@@ -72,7 +75,7 @@ public class Generator {
     }
 
     //read from a file and outputs the problem
-    private int getRndNumber(final int[] range){
+    private int getRndNumber(final int[] range) {
         final int diff = range[1] - range[0];
         return range[0] + rnd.nextInt(diff);
     }
@@ -88,6 +91,7 @@ public class Generator {
     }
 
     static void saveSolution(final Solution s, final String loc) {
+
 
     }
 

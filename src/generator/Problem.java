@@ -26,7 +26,7 @@ public class Problem {
     public String toString(){
         String s = "#Courses: " + courseCount + "\t#TimeSlots: " + timeslotsCount + "\t#Classrooms: " + classroomCount +
                 "\t#Students: " + studentCount + "\n";
-        s+= "Courses:\n";
+        s+= "Number of lecture(s) per course:\n";
         s+="[";
         for (int i = 0; i < courseCount; i++) {
             s+= " " + courses[i];
@@ -34,6 +34,7 @@ public class Problem {
         s+= " ]\n";
 
         s+= "Students: \n";
+        s+= "Index of curr student :: [ courses per student]\n";
         for (int i = 0; i < studentCount; i++) {
             s += i + "\t:: [";
             final int sLength = students[i].length;
