@@ -4,10 +4,12 @@ import java.util.Random;
 public class Generator {
     public static void main(String[] args) {
         final Generator generator = new Generator(
-                new int[]{1, 100},//students
-                new int[]{1, 100},//courses
-                new int[]{1, 100},//timeSlots
-                new int[]{1, 100}//classrooms
+                new int[]{1, 100},  //students
+                new int[]{1, 100},  //courses
+                new int[]{1, 100},  //timeSlots
+                new int[]{1, 100},  //classrooms
+                new int[]{1, 100},  //rangeStudentsCourseCount
+                new int[]{1, 100}   //rangeCoursesLecturesCount
                 );
         for (int i = 0; i < 20; i++) {
             final Problem oneProblem = generator.generate();
@@ -15,18 +17,25 @@ public class Generator {
             Generator.saveProblem(oneProblem, path);
         }
     }
+    //0 means no course
     private final int[] rangeStudents;
     private final int[] rangeCourses;
     private final int[] rangeTimeSlots;
     private final int[] rangeClassrooms;
+    private final int[] rangeStudentsCourseCount;
+    private final int[] rangeCoursesLecturesCount;
 
     private final Random rnd = new Random();
 
-    public Generator(final int[] rangeStudents, final int[] rangeCourses, final int[] rangeTimeSlots, final int[] rangeClassrooms) {
+    public Generator(final int[] rangeStudents, final int[] rangeCourses, final int[] rangeTimeSlots,
+                     final int[] rangeClassrooms, final int[] rangeStudentsCourseCount,
+                     final int[] rangeCoursesLecturesCount) {
         this.rangeStudents = rangeStudents;
         this.rangeCourses = rangeCourses;
         this.rangeTimeSlots = rangeTimeSlots;
         this.rangeClassrooms = rangeClassrooms;
+        this.rangeStudentsCourseCount = rangeStudentsCourseCount;
+        this.rangeCoursesLecturesCount = rangeCoursesLecturesCount;
     }
 
     public Problem generate() {
@@ -37,10 +46,30 @@ public class Generator {
                 getRndNumber(rangeClassrooms)
                 );
 
-
-
+        generateStudents(p.getStudents(), p.getCourseCount());
+        generateCourses(p.getCourses());
         return p;
     }
+
+    private void generateStudents(final int[][] s, final int courseCount) {
+        final int studentCount = s.length;
+        for (int i = 0; i < studentCount; i++) {
+            final int registeredCoursesCount = getRndNumber(rangeStudentsCourseCount);
+            s[i] = new int[registeredCoursesCount];
+            for (int j = 0; j < courseCount; j++) {
+                s[i][j] = rnd.nextInt(courseCount) + 1;
+            }
+        }
+    }
+
+    //courseLectureCount
+    private void generateCourses(final int[] courses) {
+        final int len = courses.length;
+        for (int i = 0; i < len; i++) {
+            courses[i] = getRndNumber(rangeCoursesLecturesCount);
+        }
+    }
+
     //read from a file and outputs the problem
 
     private int getRndNumber(final int[] range){
@@ -49,7 +78,6 @@ public class Generator {
     }
 
     static Problem readProblem(final String loc) {
-
         return null;
     }
 

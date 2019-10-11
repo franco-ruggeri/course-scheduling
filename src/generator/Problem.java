@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Problem {
     private final int studentCount;
-    private final int courseCount; // each course form 0 to count at University
+    private final int courseCount; // each course is assigned a number from 1 [inc] to coureCount [inc] at University
     private final int timeslotsCount;  // timeslots of all courses in total
     private final int classroomCount;
 
@@ -13,7 +13,7 @@ public class Problem {
 
     // each course needs to happen x amount of times
     private final int[] courses;
-    
+
     public Problem(final int studentCount, final int courseCount, final int timeslotsCount, final int classRoomCount) {
         this.timeslotsCount = timeslotsCount;
         this.classroomCount = classRoomCount;
