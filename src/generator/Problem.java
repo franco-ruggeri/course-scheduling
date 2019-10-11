@@ -23,6 +23,25 @@ public class Problem {
         this.courses = new int[courseCount];
     }
 
+    public String toString(){
+        String s = "#Courses: " + courseCount + "\t#TimeSlots: " + timeslotsCount + "\t#ClassRoom: " + classroomCount +
+                "\n#Students: " + studentCount + "\n";
+        s+="[";
+        for (int i = 0; i < courseCount; i++) {
+            s+= " " + courses[i];
+        }
+        s+= " ]\n";
+        for (int i = 0; i < studentCount; i++) {
+            s += i + ":: [";
+            final int sLength = students[i].length;
+            for (int j = 0; j < sLength; j++) {
+                s += " " + students[i][j];
+            }
+            s += " ]\n";
+        }
+        return s;
+    }
+
     public int getCourseCount() {
         return courseCount;
     }

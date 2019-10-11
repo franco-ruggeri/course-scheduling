@@ -11,10 +11,11 @@ public class Generator {
                 new int[]{1, 100},  //rangeStudentsCourseCount
                 new int[]{1, 100}   //rangeCoursesLecturesCount
                 );
-        for (int i = 0; i < 20; i++) {
-            final Problem oneProblem = generator.generate();
-            String path = "problem_" + i + ".txt";
-            Generator.saveProblem(oneProblem, path);
+        for (int i = 0; i < 1; i++) {
+            final Problem p = generator.generate();
+            System.out.println(p.toString());
+//            String path = "problem_" + i + ".txt";
+//            Generator.saveProblem(oneProblem, path);
         }
     }
     //0 means no course
@@ -56,7 +57,7 @@ public class Generator {
         for (int i = 0; i < studentCount; i++) {
             final int registeredCoursesCount = getRndNumber(rangeStudentsCourseCount);
             s[i] = new int[registeredCoursesCount];
-            for (int j = 0; j < courseCount; j++) {
+            for (int j = 0; j < registeredCoursesCount; j++) {
                 s[i][j] = rnd.nextInt(courseCount) + 1;
             }
         }
@@ -71,7 +72,6 @@ public class Generator {
     }
 
     //read from a file and outputs the problem
-
     private int getRndNumber(final int[] range){
         final int diff = range[1] - range[0];
         return range[0] + rnd.nextInt(diff);
