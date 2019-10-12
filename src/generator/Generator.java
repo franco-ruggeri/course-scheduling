@@ -91,24 +91,16 @@ public class Generator {
         return range[0] + rnd.nextInt(diff);
     }
 
-    static Problem readProblem(final String loc) {
+
+    static Solution readSolution(final String loc) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(loc));
-            String tmp = "";
-            String currentLine;
-            while ( (currentLine = reader.readLine()) != null){
-                tmp += currentLine;
-            }
-//            return new BreakthroughState(tmp);
+            Solution s = new Solution(stringToDoubleArray(reader.readLine()));
+            reader.close();
+            return s;
         } catch (Exception e){
             System.out.println(e);
         }
-        return null;
-    }
-
-
-    static Solution readSolution(final String loc) {
-
         return null;
     }
 
@@ -121,6 +113,25 @@ public class Generator {
         }catch (Exception e){
             System.out.println(e);
         }
+    }
+
+    static Problem readProblem(final String loc) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(loc));
+            final String[] splitOne = reader.readLine().split(" ");
+            final Problem p = new Problem(Integer.parseInt(splitOne[0]),
+                    Integer.parseInt(splitOne[1]),
+                    Integer.parseInt(splitOne[2]),
+                    Integer.parseInt(splitOne[3]),
+                    stringToDoubleArray(reader.readLine()),
+                    stringToArray(reader.readLine())
+            );
+            reader.close();
+            return p;
+        } catch (Exception e){
+            System.out.println(e);
+        }
+        return null;
     }
 
     static void saveProblem(final Problem p, final String loc) {
@@ -159,7 +170,22 @@ public class Generator {
     }
 
     static int[] stringToArray(String s){
+        final String[] split = s.split(" ");
+        final int[] a = new int[Integer.parseInt(split[0])];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = Integer.parseInt(split[i+1]);
+        }
+        return a;
+    }
 
-        return null;
+    static int[][] stringToDoubleArray(String s){
+        final String[] split = s.split(" ");
+        final int[][] a = new int[Integer.parseInt(split[0])][Integer.parseInt(split[1])];
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[0].length; j++) {
+                a[i][j] = Integer.parseInt(split[j+i*a.length+2]);
+            }
+        }
+        return a;
     }
 }

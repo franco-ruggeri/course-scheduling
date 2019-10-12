@@ -24,7 +24,17 @@ public class Problem {
         this.courses = new int[courseCount];
     }
 
-    public String toString(){
+    public Problem(final int studentCount, final int courseCount, final int timeslotsCount, final int classRoomCount,
+                   final int[][] students, final int[] courses) {
+        this.timeslotsCount = timeslotsCount;
+        this.classroomCount = classRoomCount;
+        this.studentCount = studentCount;
+        this.courseCount = courseCount;
+        this.students = students;
+        this.courses = courses;
+    }
+
+    public String toString() {
         String s = "#Courses: " + courseCount + "\t#TimeSlots: " + timeslotsCount + "\t#Classrooms: " + classroomCount +
                 "\t#Students: " + studentCount + "\n";
         s+= "Number of lecture(s) per course:\n";

@@ -3,6 +3,10 @@ package generator;
 public class Solution {
     private int[][] solution;
 
+    public Solution(int[][] solution){
+        setSolution(solution);
+    }
+
     public void setSolution(int[][] solution) {
         this.solution = solution;
     }
