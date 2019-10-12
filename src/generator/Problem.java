@@ -66,4 +66,8 @@ public class Problem {
     public int[] getCourses() {
         return courses;
     }
+
+    public int getStudentCount() {
+        return studentCount;
+    }
 }

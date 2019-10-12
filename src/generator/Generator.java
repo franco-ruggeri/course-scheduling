@@ -1,5 +1,9 @@
 package generator;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.Random;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,10 +12,10 @@ public class Generator {
     public static void main(String[] args) {
         final Generator generator = new Generator(
                 new int[]{1, 100},  //students
-                new int[]{100, 1000},  //courses
+                new int[]{100, 101},  //courses
                 new int[]{1, 100},  //timeSlots
                 new int[]{1, 100},  //classrooms
-                new int[]{1, 100},  //rangeStudentsCourseCount
+                new int[]{100, 101},  //rangeStudentsCourseCount
                 new int[]{1, 100}   //rangeCoursesLecturesCount
         );
         for (int i = 0; i < 1; i++) {
@@ -88,6 +92,17 @@ public class Generator {
     }
 
     static Problem readProblem(final String loc) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(loc));
+            String tmp = "";
+            String currentLine;
+            while ( (currentLine = reader.readLine()) != null){
+                tmp += currentLine;
+            }
+//            return new BreakthroughState(tmp);
+        } catch (Exception e){
+            System.out.println(e);
+        }
         return null;
     }
 
@@ -98,12 +113,53 @@ public class Generator {
     }
 
     static void saveSolution(final Solution s, final String loc) {
-
-
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(loc));
+            final int[][] a = s.getSolution();
+            writer.write(intArrayToString(a));
+            writer.close();
+        }catch (Exception e){
+            System.out.println(e);
+        }
     }
 
     static void saveProblem(final Problem p, final String loc) {
-
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(loc));
+            writer.write(p.getStudentCount() + " " + p.getCourseCount() + " " + p.getTimeslotsCount() + " " + p.getClassroomCount() + "\n");
+            writer.write(intArrayToString(p.getStudents()));
+            writer.write(intArrayToString(p.getCourses()));
+            writer.close();
+        }catch (Exception e){
+            System.out.println(e);
+        }
     }
 
+    static String intArrayToString(int[][] a){
+        final int len = a.length;
+        final int len2 = a[0].length;
+        String ans = len + " " + len2;
+        for (int i = 0; i < len * len2; i++){
+            for (int j = 0; j < len2; j++) {
+                ans += " " + a[i][j];
+            }
+        }
+        ans+="\n";
+        return ans;
+    }
+
+    static String intArrayToString(int[] a){
+        final int len = a.length;
+        String ans = Integer.toString(len);
+        for (int i = 0; i < len; i++){
+            ans += " " + a[i];
+        }
+        ans+="\n";
+        return ans;
+    }
+
+    static int[] stringToArray(String s){
+
+        return null;
+    }
 }
