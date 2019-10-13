@@ -15,6 +15,9 @@ public class Problem {
     // each course needs to happen x amount of times
     private final int[] courses;
 
+    private Map<List<Integer>, Integer> groupsCount = new HashMap<List<Integer>, Integer>();
+    private Set<List<Integer>> groups = new HashSet<List<Integer>>();
+
     public Problem(final int studentCount, final int courseCount, final int timeslotsCount, final int classRoomCount) {
         this.timeslotsCount = timeslotsCount;
         this.classroomCount = classRoomCount;
@@ -32,6 +35,11 @@ public class Problem {
         this.courseCount = courseCount;
         this.students = students;
         this.courses = courses;
+        for (int[] group:students){
+            List<Integer> key = Arrays.stream(group).boxed().collect(Collectors.toList());
+            this.groups.add(key);
+            this.groupsCount.put(key, groupsCount.getOrDefault(key, 0) + 1);
+        }
     }
 
     public String toString() {
@@ -79,5 +87,13 @@ public class Problem {
 
     public int getStudentCount() {
         return studentCount;
+    }
+
+    public Map<List<Integer>, Integer> getGroupsCount() {
+        return groupsCount;
+    }
+
+    public Set<List<Integer>> getGroups() {
+        return groups;
     }
 }

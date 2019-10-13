@@ -74,6 +74,7 @@ public class Generator {
             for (int j = 0; j < registeredCoursesCount; j++) {
                 s[i][j] = courseList.get(j);
             }
+            Array.sort(s[i]);
         }
     }
 
