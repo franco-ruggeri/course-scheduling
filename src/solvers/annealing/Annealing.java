@@ -64,6 +64,12 @@ public class Annealing {
             }
             temperature *= 1 - coolingRate;
         }
+        // for (int[] timeslot : schedule) {
+        //     for (int lecture : timeslot) {
+        //         System.out.print(" "+lecture);
+        //     }
+        //     System.out.println();
+        // }
         return new Solution(schedule);
     }
 
