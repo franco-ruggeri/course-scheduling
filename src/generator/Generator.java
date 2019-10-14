@@ -197,7 +197,12 @@ public class Generator {
     }
 
     static boolean isValid(final Problem p) {
-
-        return false;
+        final int capacity = p.getClassroomCount() * p.getTimeslotsCount();
+        int sum = 0;
+        final int[] c = p.getCourses();
+        for (int i: c) {
+            sum += i;
+        }
+        return capacity >= sum;
     }
 }
