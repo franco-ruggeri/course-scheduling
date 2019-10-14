@@ -16,7 +16,8 @@ public class Generator {
     public static void main(String[] args) {
         final Generator generator = new Generator(new int[] { 1, 100 }, // students
                 new int[] { 40, 41 }, // courses
-                new int[] { 1, 20 }, // timeSlots
+                new int[] { 1, 5 }, // weeks
+                new int[] { 1, 5 }, // lectures per day
                 new int[] { 1, 20 }, // classrooms
                 new int[] { 1, 4 }, // rangeStudentsCourseCount
                 new int[] { 1, 5 } // rangeCoursesLecturesCount
@@ -38,24 +39,26 @@ public class Generator {
             System.out.println();
         }
         saveProblem(problem, "problem.txt");
-        saveSolution(solution, "solution.txt");
+        saveSolution(solution, "solution.csv");
     }
 
     // 0 means no course
     private final int[] rangeStudents;
     private final int[] rangeCourses;
-    private final int[] rangeTimeSlots;
+    private final int[] rangeWeeks;
+    private final int[] rangeHoursPerDay;
     private final int[] rangeClassrooms;
     private final int[] rangeStudentsCourseCount;
     private final int[] rangeCoursesLecturesCount;
 
     private final Random rnd = new Random();
 
-    public Generator(final int[] rangeStudents, final int[] rangeNumCourses, final int[] rangeTimeSlots,
+    public Generator(final int[] rangeStudents, final int[] rangeNumCourses, final int[] rangeWeeks, final int[] rangeHoursPerDay,
             final int[] rangeClassrooms, final int[] rangeStudentsCourseCount, final int[] rangeCoursesLecturesCount) {
         this.rangeStudents = rangeStudents;
         this.rangeCourses = rangeNumCourses;
-        this.rangeTimeSlots = rangeTimeSlots;
+        this.rangeWeeks = rangeWeeks;
+        this.rangeHoursPerDay = rangeHoursPerDay;
         this.rangeClassrooms = rangeClassrooms;
         this.rangeStudentsCourseCount = rangeStudentsCourseCount;
         this.rangeCoursesLecturesCount = rangeCoursesLecturesCount;
@@ -64,8 +67,8 @@ public class Generator {
     public Problem generate() {
         Problem p = null;
         do {
-            p = new Problem(getRndNumber(rangeStudents), getRndNumber(rangeCourses),
-                    getRndNumber(rangeTimeSlots), getRndNumber(rangeClassrooms));
+            p = new Problem(getRndNumber(rangeStudents), getRndNumber(rangeCourses), getRndNumber(rangeWeeks), getRndNumber(rangeHoursPerDay),
+                    getRndNumber(rangeClassrooms));
             generateCoursePerStudents(p.getStudents(), p.getCourseCount());
             generateNumOfLecturesPerCourses(p.getCourses());
         } while (!isValid(p));
@@ -121,7 +124,7 @@ public class Generator {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
             final int[][] a = s.getSolution();
-            writer.print(intArrayToString(a));
+            writer.print(intArrayToCSV(a));
             writer.close();
         } catch (Exception e) {
             System.out.println(e);
@@ -166,6 +169,20 @@ public class Generator {
         for (int i = 0; i < len; i++) {
             for (int j = 0; j < len2; j++) {
                 ans += a[i][j] + " ";
+            }
+            ans += "\n";
+        }
+        return ans;
+    }
+
+    static String intArrayToCSV(int[][] a) {
+        final int len = a.length;
+        final int len2 = a[0].length;
+        String ans = "";
+        // String ans = len + "\t" + len2 + "\n";
+        for (int i = 0; i < len; i++) {
+            for (int j = 0; j < len2; j++) {
+                ans += a[i][j] + ",";
             }
             ans += "\n";
         }

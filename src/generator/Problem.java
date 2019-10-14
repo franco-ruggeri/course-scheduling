@@ -10,7 +10,9 @@ import java.util.stream.Collectors;
 
 public class Problem {
     private final int studentCount;
-    private final int courseCount; // each course is assigned a number from 1 [inc] to coureCount [inc] at University
+    private final int courseCount; // each course is assigned a number from 1 [inc] to courseCount [inc] at 
+    private final int weeks;  // weeks of the schedule
+    private final int hoursPerDay;  // lessons per day
     private final int timeslotsCount;  // timeslots of all courses in total
     private final int classroomCount;
 
@@ -26,8 +28,10 @@ public class Problem {
     // in groups count we can consult how many students are taking a group, set of courses.
     private Map<List<Integer>, Integer> groupsCount = new HashMap<List<Integer>, Integer>();
 
-    public Problem(final int studentCount, final int courseCount, final int timeslotsCount, final int classRoomCount) {
-        this.timeslotsCount = timeslotsCount;
+    public Problem(final int studentCount, final int courseCount, final int weeks, final int hoursPerDay, final int classRoomCount) {
+        this.weeks = weeks;
+        this.hoursPerDay = hoursPerDay;
+        this.timeslotsCount = weeks*5*hoursPerDay;
         this.classroomCount = classRoomCount;
         this.studentCount = studentCount;
         this.courseCount = courseCount;
@@ -103,5 +107,13 @@ public class Problem {
 
     public Set<List<Integer>> getGroups() {
         return groups;
+    }
+
+    public int getWeeks() {
+        return weeks;
+    }
+
+    public int getHoursPerDay() {
+        return hoursPerDay;
     }
 }
