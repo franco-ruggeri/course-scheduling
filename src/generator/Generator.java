@@ -22,6 +22,7 @@ public class Generator {
         for (int i = 0; i < 1; i++) {
             final Problem p = generator.generate();
             System.out.println(p.toString());
+            System.out.println("IsValid:: " + isValid(p));
 //           String path = "problem_" + i + ".txt";
 //            Generator.saveProblem(oneProblem, path);
         }
