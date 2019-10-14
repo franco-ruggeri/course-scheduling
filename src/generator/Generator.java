@@ -14,7 +14,7 @@ public class Generator {
     public static void main(String[] args) {
         final Generator generator = new Generator(new int[] { 1, 100 }, // students
                 new int[] { 100, 101 }, // courses
-                new int[] { 1, 5 }, // weeks
+                new int[] { 1, 25 }, // days
                 new int[] { 1, 5 }, // hoursPerDay
                 new int[] { 1, 100 }, // classrooms
                 new int[] { 100, 101 }, // rangeStudentsCourseCount
@@ -32,13 +32,13 @@ public class Generator {
             System.out.println();
         }
         saveProblem(problem, "problem.txt");
-        saveSolution(solution, "solution.csv");
+        saveSolution(solution, problem, "solution.csv");
     }
 
     // 0 means no course
     private final int[] rangeStudents;
     private final int[] rangeCourses;
-    private final int[] rangeWeeks;
+    private final int[] rangeDays;
     private final int[] rangeHoursPerDay;
     private final int[] rangeClassrooms;
     private final int[] rangeStudentsCourseCount;
@@ -46,12 +46,12 @@ public class Generator {
 
     private final Random rnd = new Random();
 
-    public Generator(final int[] rangeStudents, final int[] rangeNumCourses, final int[] rangeWeeks,
+    public Generator(final int[] rangeStudents, final int[] rangeNumCourses, final int[] rangeDays,
             final int[] rangeHoursPerDay, final int[] rangeClassrooms, final int[] rangeStudentsCourseCount,
             final int[] rangeCoursesLecturesCount) {
         this.rangeStudents = rangeStudents;
         this.rangeCourses = rangeNumCourses;
-        this.rangeWeeks = rangeWeeks;
+        this.rangeDays = rangeDays;
         this.rangeHoursPerDay = rangeHoursPerDay;
         this.rangeClassrooms = rangeClassrooms;
         this.rangeStudentsCourseCount = rangeStudentsCourseCount;
@@ -61,7 +61,7 @@ public class Generator {
     public Problem generate() {
         Problem p = null;
         do {
-            p = new Problem(getRndNumber(rangeStudents), getRndNumber(rangeCourses), getRndNumber(rangeWeeks),
+            p = new Problem(getRndNumber(rangeStudents), getRndNumber(rangeCourses), getRndNumber(rangeDays),
                     getRndNumber(rangeHoursPerDay), getRndNumber(rangeClassrooms));
             generateCoursePerStudents(p.getStudents(), p.getCourseCount());
             generateNumOfLecturesPerCourses(p.getCourses());
@@ -114,11 +114,11 @@ public class Generator {
         return null;
     }
 
-    static void saveSolution(final Solution s, final String loc) {
+    static void saveSolution(final Solution s, final Problem p, final String loc) {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
             final int[][] a = s.getSolution();
-            writer.print(intArrayToCSV(a));
+            writer.print(intArrayToCSV(a, p.getDays(), p.getHoursPerDay()));
             writer.close();
         } catch (Exception e) {
             System.out.println(e);
@@ -169,14 +169,31 @@ public class Generator {
         return ans;
     }
 
-    static String intArrayToCSV(int[][] a) {
+    static String intArrayToCSV(int[][] a, int days, int hoursPerDay) {
         final int len = a.length;
         final int len2 = a[0].length;
-        String ans = "";
+        String ans = "Day/Classroom,Hour";
+        String[] week = {"Monday","Tuesday", "Wednesday", "Thursday", "Friday"};
         // String ans = len + "\t" + len2 + "\n";
-        for (int i = 0; i < len; i++) {
-            for (int j = 0; j < len2; j++) {
-                ans += a[i][j] + ",";
+        // for (int i = 0; i < len; i++) {
+        //     for (int j = 0; j < len2; j++) {
+        //         ans += a[i][j] + ",";
+        //     }
+        //     ans += "\n";
+        // }
+        for (int cl = 0; cl < len2; cl++) {
+            ans += "," + (cl+1);
+        }
+        ans += "\n";
+        for (int day = 0; day < days; day++) {
+            ans += week[day%5];
+            for (int hpd = 0; hpd < hoursPerDay; hpd++) {
+                int i = hpd * (day + 1);
+                ans += "," + hpd;
+                for (int j = 0; j < len2; j++) {
+                    ans += "," + a[i][j];
+                }
+                ans += "\n";
             }
             ans += "\n";
         }
