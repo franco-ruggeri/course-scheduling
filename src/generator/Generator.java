@@ -13,13 +13,14 @@ import solvers.annealing.Annealing;
 public class Generator {
     public static void main(String[] args) {
         final Generator generator = new Generator(new int[] { 1, 100 }, // students
-                new int[] { 1, 6 }, // courses
-                new int[] { 1, 3 }, // weeks
-                new int[] { 4, 5 }, // lectures per day
-                new int[] { 1, 10 }, // classrooms
-                new int[] { 2, 3 }, // rangeStudentsCourseCount
-                new int[] { 1, 3 } // rangeCoursesLecturesCount
+                new int[] { 100, 101 }, // courses
+                new int[] { 1, 5 }, // weeks
+                new int[] { 1, 5 }, // hoursPerDay
+                new int[] { 1, 100 }, // classrooms
+                new int[] { 100, 101 }, // rangeStudentsCourseCount
+                new int[] { 1, 100 } // rangeCoursesLecturesCount
         );
+
         final Problem problem = generator.generate();
         final Annealing solver = new Annealing(1000000, .03, problem);
         final Solution solution = solver.simulate();
@@ -34,7 +35,7 @@ public class Generator {
         saveSolution(solution, "solution.csv");
     }
 
-    //0 means no course
+    // 0 means no course
     private final int[] rangeStudents;
     private final int[] rangeCourses;
     private final int[] rangeWeeks;
@@ -45,8 +46,9 @@ public class Generator {
 
     private final Random rnd = new Random();
 
-    public Generator(final int[] rangeStudents, final int[] rangeNumCourses, final int[] rangeWeeks, final int[] rangeHoursPerDay,
-            final int[] rangeClassrooms, final int[] rangeStudentsCourseCount, final int[] rangeCoursesLecturesCount) {
+    public Generator(final int[] rangeStudents, final int[] rangeNumCourses, final int[] rangeWeeks,
+            final int[] rangeHoursPerDay, final int[] rangeClassrooms, final int[] rangeStudentsCourseCount,
+            final int[] rangeCoursesLecturesCount) {
         this.rangeStudents = rangeStudents;
         this.rangeCourses = rangeNumCourses;
         this.rangeWeeks = rangeWeeks;
@@ -59,13 +61,14 @@ public class Generator {
     public Problem generate() {
         Problem p = null;
         do {
-            p = new Problem(getRndNumber(rangeStudents), getRndNumber(rangeCourses), getRndNumber(rangeWeeks), getRndNumber(rangeHoursPerDay),
-                    getRndNumber(rangeClassrooms));
+            p = new Problem(getRndNumber(rangeStudents), getRndNumber(rangeCourses), getRndNumber(rangeWeeks),
+                    getRndNumber(rangeHoursPerDay), getRndNumber(rangeClassrooms));
             generateCoursePerStudents(p.getStudents(), p.getCourseCount());
             generateNumOfLecturesPerCourses(p.getCourses());
         } while (!isValid(p));
         return p;
     }
+
     //
     private void generateCoursePerStudents(int[][] s, final int courseCount) {
         final int studentCount = s.length;
@@ -85,7 +88,7 @@ public class Generator {
         }
     }
 
-    //courseLectureCount
+    // courseLectureCount
     private void generateNumOfLecturesPerCourses(final int[] courses) {
         final int len = courses.length;
         for (int i = 0; i < len; i++) {
@@ -93,12 +96,11 @@ public class Generator {
         }
     }
 
-    //read from a file and outputs the problem
+    // read from a file and outputs the problem
     private int getRndNumber(final int[] range) {
         final int diff = range[1] - range[0];
         return range[0] + rnd.nextInt(diff);
     }
-
 
     static Solution readSolution(final String loc) {
         try {
@@ -106,7 +108,7 @@ public class Generator {
             Solution s = new Solution(stringToDoubleArray(reader.readLine()));
             reader.close();
             return s;
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e);
         }
         return null;
@@ -127,16 +129,12 @@ public class Generator {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(loc));
             final String[] splitOne = reader.readLine().split(" ");
-            final Problem p = new Problem(Integer.parseInt(splitOne[0]),
-                    Integer.parseInt(splitOne[1]),
-                    Integer.parseInt(splitOne[2]),
-                    Integer.parseInt(splitOne[3]),
-                    stringToDoubleArray(reader.readLine()),
-                    stringToArray(reader.readLine())
-            );
+            final Problem p = new Problem(Integer.parseInt(splitOne[0]), Integer.parseInt(splitOne[1]),
+                    Integer.parseInt(splitOne[2]), Integer.parseInt(splitOne[3]),
+                    stringToDoubleArray(reader.readLine()), stringToArray(reader.readLine()));
             reader.close();
             return p;
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e);
         }
         return null;
@@ -195,21 +193,21 @@ public class Generator {
         return ans;
     }
 
-    static int[] stringToArray(String s){
+    static int[] stringToArray(String s) {
         final String[] split = s.split(" ");
         final int[] a = new int[Integer.parseInt(split[0])];
         for (int i = 0; i < a.length; i++) {
-            a[i] = Integer.parseInt(split[i+1]);
+            a[i] = Integer.parseInt(split[i + 1]);
         }
         return a;
     }
 
-    static int[][] stringToDoubleArray(String s){
+    static int[][] stringToDoubleArray(String s) {
         final String[] split = s.split(" ");
         final int[][] a = new int[Integer.parseInt(split[0])][Integer.parseInt(split[1])];
         for (int i = 0; i < a.length; i++) {
             for (int j = 0; j < a[0].length; j++) {
-                a[i][j] = Integer.parseInt(split[j+i*a.length+2]);
+                a[i][j] = Integer.parseInt(split[j + i * a.length + 2]);
             }
         }
         return a;
@@ -219,7 +217,7 @@ public class Generator {
         final int capacity = p.getClassroomCount() * p.getTimeslotsCount();
         int sum = 0;
         final int[] c = p.getCourses();
-        for (int i: c) {
+        for (int i : c) {
             sum += i;
         }
         return capacity >= sum;
