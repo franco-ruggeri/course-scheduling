@@ -99,6 +99,8 @@ public class Evaluator {
     }
 
     static boolean isValid(final Problem p, final Solution s) {
+        //A course has to have X amount of lectures in the solution where X is the amount of lecutures given by the problem.
+        //course does not exist e.g. negative numbers
 
         return false;
     }
