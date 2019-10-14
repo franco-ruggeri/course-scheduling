@@ -190,4 +190,9 @@ public class Generator {
         }
         return a;
     }
+
+    static boolean isValid(final Problem p) {
+
+        return false;
+    }
 }
