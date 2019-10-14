@@ -15,11 +15,11 @@ import solvers.annealing.Annealing;
 public class Generator {
     public static void main(String[] args) {
         final Generator generator = new Generator(new int[] { 1, 100 }, // students
-                new int[] { 100, 101 }, // courses
-                new int[] { 1, 100 }, // timeSlots
-                new int[] { 1, 100 }, // classrooms
-                new int[] { 100, 101 }, // rangeStudentsCourseCount
-                new int[] { 1, 100 } // rangeCoursesLecturesCount
+                new int[] { 40, 41 }, // courses
+                new int[] { 1, 20 }, // timeSlots
+                new int[] { 1, 20 }, // classrooms
+                new int[] { 1, 4 }, // rangeStudentsCourseCount
+                new int[] { 1, 5 } // rangeCoursesLecturesCount
         );
         // for (int i = 0; i < 1; i++) {
         // final Problem p = generator.generate();
@@ -27,8 +27,8 @@ public class Generator {
         // // String path = "problem_" + i + ".txt";
         // // Generator.saveProblem(oneProblem, path);
         // }
-        final Problem p = generator.generate();
-        final Annealing solver = new Annealing(1000000, .03, p);
+        final Problem problem = generator.generate();
+        final Annealing solver = new Annealing(1000000, .03, problem);
         final Solution solution = solver.simulate();
         final int[][] schedule = solution.getSolution();
         for (int[] timeslot : schedule) {
@@ -37,6 +37,7 @@ public class Generator {
             }
             System.out.println();
         }
+        saveProblem(problem, "problem.txt");
         saveSolution(solution, "solution.txt");
     }
 
@@ -61,11 +62,13 @@ public class Generator {
     }
 
     public Problem generate() {
-        final Problem p = new Problem(getRndNumber(rangeStudents), getRndNumber(rangeCourses),
-                getRndNumber(rangeTimeSlots), getRndNumber(rangeClassrooms));
-
-        generateCoursePerStudents(p.getStudents(), p.getCourseCount());
-        generateNumOfLecturesPerCourses(p.getCourses());
+        Problem p = null;
+        do {
+            p = new Problem(getRndNumber(rangeStudents), getRndNumber(rangeCourses),
+                    getRndNumber(rangeTimeSlots), getRndNumber(rangeClassrooms));
+            generateCoursePerStudents(p.getStudents(), p.getCourseCount());
+            generateNumOfLecturesPerCourses(p.getCourses());
+        } while (!isValid(p));
         return p;
     }
 
@@ -142,11 +145,14 @@ public class Generator {
 
     static void saveProblem(final Problem p, final String loc) {
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(loc));
-            writer.write(p.getStudentCount() + " " + p.getCourseCount() + " " + p.getTimeslotsCount() + " "
-                    + p.getClassroomCount() + "\n");
-            writer.write(intArrayToString(p.getStudents()));
-            writer.write(intArrayToString(p.getCourses()));
+            PrintWriter writer = new PrintWriter(loc, "UTF-8");
+            writer.println("students, courses, timeslots, classrooms");
+            writer.println(p.getStudentCount() + " " + p.getCourseCount() + " " + p.getTimeslotsCount() + " "
+                    + p.getClassroomCount());
+            writer.println("courses by student");
+            writer.println(intArrayToString(p.getStudents()));
+            writer.println("lessons by course");
+            writer.println(intArrayToString(p.getCourses()));
             writer.close();
         } catch (Exception e) {
             System.out.println(e);
@@ -159,7 +165,7 @@ public class Generator {
         String ans = len + "\t" + len2 + "\n";
         for (int i = 0; i < len; i++) {
             for (int j = 0; j < len2; j++) {
-                ans += a[i][j] + "\t";
+                ans += a[i][j] + " ";
             }
             ans += "\n";
         }
@@ -168,9 +174,9 @@ public class Generator {
 
     static String intArrayToString(int[] a) {
         final int len = a.length;
-        String ans = Integer.toString(len);
+        String ans = len + "\n";
         for (int i = 0; i < len; i++) {
-            ans += a[i] + "\t";
+            ans += a[i] + " ";
         }
         ans += "\n";
         return ans;
