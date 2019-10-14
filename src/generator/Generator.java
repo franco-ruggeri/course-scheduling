@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
 
+import solvers.annealing.Annealing;
+
 public class Generator {
     public static void main(String[] args) {
         final Generator generator = new Generator(
@@ -19,12 +21,15 @@ public class Generator {
                 new int[]{100, 101},  //rangeStudentsCourseCount
                 new int[]{1, 100}   //rangeCoursesLecturesCount
         );
-        for (int i = 0; i < 1; i++) {
-            final Problem p = generator.generate();
-            System.out.println(p.toString());
-//           String path = "problem_" + i + ".txt";
-//            Generator.saveProblem(oneProblem, path);
-        }
+//         for (int i = 0; i < 1; i++) {
+//             final Problem p = generator.generate();
+//             System.out.println(p.toString());
+// //           String path = "problem_" + i + ".txt";
+// //            Generator.saveProblem(oneProblem, path);
+//         }
+        final Problem p = generator.generate();
+        final Annealing solver = new Annealing(1000000, .03, p);
+        Generator.saveSolution(solver.simulate(),"solution.txt");
     }
 
     //0 means no course
