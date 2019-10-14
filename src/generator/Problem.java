@@ -21,8 +21,10 @@ public class Problem {
     // each course needs to happen x amount of times
     private final int[] courses;
 
-    private Map<List<Integer>, Integer> groupsCount = new HashMap<List<Integer>, Integer>();
+    // a group is a set of courses that one or more students are taking
     private Set<List<Integer>> groups = new HashSet<List<Integer>>();
+    // in groups count we can consult how many students are taking a group, set of courses.
+    private Map<List<Integer>, Integer> groupsCount = new HashMap<List<Integer>, Integer>();
 
     public Problem(final int studentCount, final int courseCount, final int timeslotsCount, final int classRoomCount) {
         this.timeslotsCount = timeslotsCount;

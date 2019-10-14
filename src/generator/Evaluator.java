@@ -26,7 +26,7 @@ public class Evaluator {
         return 0;
     }
 
-    static int evaluate(final Problem p, final Solution s) {
+    public static int evaluate(final Problem p, final Solution s) {
         switch (CHOSEN) {
         case OVERLAPPING:
             return minOverlaps(p, s);
