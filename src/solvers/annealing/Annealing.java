@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import generator.Evaluator;
-import generator.Generator;
 import generator.Problem;
 import generator.Solution;
 
