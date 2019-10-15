@@ -37,6 +37,7 @@ public class Generator {
         // }
         System.err.println("saving");
         saveProblem(problem, "problem.txt");
+//        System.out.println("HELO WORLD");
         saveSolution(solution, problem, "solution.csv");
         System.err.println("finish");
     }
@@ -124,7 +125,7 @@ public class Generator {
             reader.close();
             return s;
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
         return null;
     }
@@ -136,7 +137,7 @@ public class Generator {
             writer.print(intArrayToCSV(a, p.getDays(), p.getHoursPerDay()));
             writer.close();
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 
@@ -150,7 +151,7 @@ public class Generator {
             reader.close();
             return p;
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
         return null;
     }
@@ -167,7 +168,7 @@ public class Generator {
             writer.println(intArrayToString(p.getCourses()));
             writer.close();
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 
