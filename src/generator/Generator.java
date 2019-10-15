@@ -27,7 +27,7 @@ public class Generator {
         );
 
         final Problem problem = generator.generate();
-        final Annealing solver = new Annealing(10000000, .01, problem);
+        final Annealing solver = new Annealing(100000, .01, problem);
         final Solution solution = solver.simulate();
         
 //        final Problem problem = generator.generate();

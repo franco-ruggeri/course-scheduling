@@ -44,7 +44,8 @@ public class Annealing {
         double keep = 0;
         double r = 0;
         init(schedule);
-        bestCost = Evaluator.evaluate(p, new Solution(schedule));
+        cost = Evaluator.evaluate(p, new Solution(schedule));
+        bestCost = cost;
         while (temperature > 1) {
             for (int i = 0; i < timeslots; i++) {
                 newSchedule[i] = Arrays.copyOf(schedule[i], schedule[i].length);
@@ -54,17 +55,17 @@ public class Annealing {
             // System.err.println("Cost = "+cost);
             // System.err.println("New Cost = "+newCost);
             // System.err.println("Best Cost = "+bestCost);
-            cost = Evaluator.evaluate(p, new Solution(schedule));
             if (newCost > cost) {
                 for (int i = 0; i < timeslots; i++) {
                     schedule[i] = Arrays.copyOf(newSchedule[i], newSchedule[i].length);
                 }
                 if (newCost > bestCost) {
                     for (int i = 0; i < timeslots; i++) {
-                        bestSchedule[i] = Arrays.copyOf(schedule[i], schedule[i].length);
+                        bestSchedule[i] = Arrays.copyOf(newSchedule[i], newSchedule[i].length);
                     }
                     bestCost = newCost;
                 }
+                cost = newCost;
             } else {
                 keep = Math.exp((cost - newCost) / temperature);
                 r = ThreadLocalRandom.current().nextDouble();
@@ -72,6 +73,7 @@ public class Annealing {
                     for (int i = 0; i < timeslots; i++) {
                         schedule[i] = Arrays.copyOf(newSchedule[i], newSchedule[i].length);
                     }
+                    cost = newCost;
                 }
             }
             temperature *= 1 - coolingRate;
@@ -96,8 +98,8 @@ public class Annealing {
                 total += groups.get(group) * coursesCount[courseCode - 1];
             }
         }
-        System.err.println("Total of lectures enrolled = " + total);
-        System.err.println("Lectures taken = " + bestCost);
+        // System.err.println("Total of lectures enrolled = " + total);
+        // System.err.println("Lectures taken = " + Evaluator.lecturesTaken(p, new Solution(bestSchedule)));
         return new Solution(bestSchedule);
     }
 
@@ -119,6 +121,12 @@ public class Annealing {
                 coursesMap.put(randCourse, coursesMap.get(randCourse) - 1);
                 if (coursesMap.get(randCourse) == 0)
                     coursesMap.remove(randCourse);
+                else {
+                    schedule[timeslots - 1 - t][classrooms - 1 - cl] = randCourse;
+                    coursesMap.put(randCourse, coursesMap.get(randCourse) - 1);
+                    if (coursesMap.get(randCourse) == 0)
+                        coursesMap.remove(randCourse);
+                }
                 if (coursesMap.isEmpty())
                     return;
             }
