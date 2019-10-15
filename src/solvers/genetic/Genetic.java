@@ -3,8 +3,8 @@ package solvers.genetic;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Function;
 
+import generator.Evaluator;
 import generator.Problem;
 import generator.Solution;
 
@@ -14,12 +14,11 @@ import generator.Solution;
  */
 public class Genetic {
     private final Problem problem;
-    private final Function<String, Integer> fitnessFunction;
-    private int populationSize;
+    private final int populationSize;
     private List<Individual> population;
     private double mutationProbability;
-    private int enoughFitness;
-    private long maxTime;
+    private final int enoughFitness;
+    private final long maxTime;
     private Random random;
     
     private class Individual {
@@ -47,15 +46,13 @@ public class Genetic {
     	
     	Individual(String genes) {
     		this.genes = genes;
-    		this.fitnessValue = fitnessFunction.apply(genes);
+    		this.fitnessValue = fitness(genes);
 		}
 
     }
     
-	public Genetic(Problem problem, Function<Solution, Integer> fitnessFunction, int populationSize,
-			double mutationProbability, int enoughFitness, long maxTime) {
+	public Genetic(Problem problem, int populationSize, double mutationProbability, int enoughFitness, long maxTime) {
         this.problem = problem;
-        this.fitnessFunction = s -> fitnessFunction.apply(genesToState(s));
         this.populationSize = populationSize;
         this.mutationProbability = mutationProbability;
         this.enoughFitness = enoughFitness;
@@ -133,6 +130,10 @@ public class Genetic {
 		int n = genes.length();
 		int m = random.nextInt(n);	// index of mutating gene
 		return genes.substring(0, m-1) + random.nextInt(1) + genes.substring(m+1, n);
+	}
+	
+	int fitness(String genes) {
+		return Evaluator.evaluate(problem, genesToState(genes));
 	}
 	
 	private Solution genesToState(String genes) {
