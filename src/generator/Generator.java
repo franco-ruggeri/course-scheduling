@@ -6,33 +6,38 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import solvers.annealing.Annealing;
 
 public class Generator {
     public static void main(String[] args) {
-        final Generator generator = new Generator(new int[] { 1, 100 }, // students
-                new int[] { 100, 101 }, // courses
-                new int[] { 1, 25 }, // days
-                new int[] { 1, 5 }, // hoursPerDay
-                new int[] { 1, 100 }, // classrooms
-                new int[] { 100, 101 }, // rangeStudentsCourseCount
-                new int[] { 1, 100 } // rangeCoursesLecturesCount
+        final Generator generator = new Generator(new int[] { 100, 500 }, // students
+                new int[] { 10, 20 }, // courses
+                new int[] { 90, 120 }, // days
+                new int[] { 5, 6 }, // hoursPerDay
+                new int[] { 5, 10 }, // classrooms
+                new int[] { 5, 8 }, // rangeStudentsCourseCount
+                new int[] { 7, 19 } // rangeCoursesLecturesCount
         );
 
         final Problem problem = generator.generate();
-        final Annealing solver = new Annealing(1000000, .03, problem);
+        final Annealing solver = new Annealing(10000000, .01, problem);
         final Solution solution = solver.simulate();
-        final int[][] schedule = solution.getSolution();
-        for (int[] timeslot : schedule) {
-            for (int lecture : timeslot) {
-                System.out.print(lecture + "\t");
-            }
-            System.out.println();
-        }
+        // final int[][] schedule = solution.getSolution();
+        // for (int[] timeslot : schedule) {
+        // for (int lecture : timeslot) {
+        // System.err.print(lecture + "\t");
+        // }
+        // System.err.println();
+        // }
         saveProblem(problem, "problem.txt");
         saveSolution(solution, problem, "solution.csv");
+        System.err.println("finish");
     }
 
     // 0 means no course
@@ -65,8 +70,17 @@ public class Generator {
                     getRndNumber(rangeHoursPerDay), getRndNumber(rangeClassrooms));
             generateCoursePerStudents(p.getStudents(), p.getCourseCount());
             generateNumOfLecturesPerCourses(p.getCourses());
+            generateGroups(p.getGroups(), p.getGroupsCount(), p.getStudents());
         } while (!isValid(p));
         return p;
+    }
+
+    private void generateGroups(Set<List<Integer>> groups, Map<List<Integer>, Integer> groupsCount, int[][] students) {
+        for (int[] group : students) {
+            List<Integer> key = Arrays.stream(group).boxed().collect(Collectors.toList());
+            groups.add(key);
+            groupsCount.put(key, groupsCount.getOrDefault(key, 0) + 1);
+        }
     }
 
     //
@@ -130,7 +144,7 @@ public class Generator {
             BufferedReader reader = new BufferedReader(new FileReader(loc));
             final String[] splitOne = reader.readLine().split(" ");
             final Problem p = new Problem(Integer.parseInt(splitOne[0]), Integer.parseInt(splitOne[1]),
-                    Integer.parseInt(splitOne[2]), Integer.parseInt(splitOne[3]),
+                    Integer.parseInt(splitOne[2]), Integer.parseInt(splitOne[3]), Integer.parseInt(splitOne[4]),
                     stringToDoubleArray(reader.readLine()), stringToArray(reader.readLine()));
             reader.close();
             return p;
