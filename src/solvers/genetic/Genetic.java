@@ -25,23 +25,23 @@ public class Genetic {
     	String genes;
     	int fitnessValue;
     	
-		/*
-		 * A state is a matrix of courses (rows and columns are timeslots and
-		 * classrooms, respectively). To represent it as sequence of genes, we need
-		 * #Timeslots x #Classrooms x log2(#Courses) bits.
-		 */
     	Individual(Solution state) {
+			/*
+			 * A state is a matrix of courses (rows and columns are timeslots and
+			 * classrooms, respectively). To represent it as sequence of genes, we need
+			 * #Timeslots x #Classrooms x log2(#Courses) bits.
+			 */
     		int courseCount = problem.getCourseCount();
             int timeslotCount = problem.getTimeslotsCount();
             int classrooomCount = problem.getClassroomCount();
-            
-    		for (int t=0; t<timeslotCount; t++) {
-    			for (int cl=0; cl<classrooomCount; cl++) {
-    				for (int c=0; c<courseCount; c++) {
-    					
-    				}
-    			}
-    		}
+            int[][] schedule = state.getSolution();
+            StringBuffer sb = new StringBuffer();
+    		for (int t=0; t<timeslotCount; t++)
+    			for (int cl=0; cl<classrooomCount; cl++)
+    				for (int c=0; c<courseCount; c++)
+    					sb.append(Integer.valueOf(schedule[t][cl]).toString());
+    		// TODO non e' completo l'encoding, in questo modo ho #timeslots x #classrooms x 32 bit
+    		genes = sb.toString();
     	}
     	
     	Individual(String genes) {
@@ -128,8 +128,9 @@ public class Genetic {
 	
 	private String mutate(String genes) {
 		int n = genes.length();
-		int m = random.nextInt(n);	// index of mutating gene
-		return genes.substring(0, m-1) + random.nextInt(1) + genes.substring(m+1, n);
+		int m = random.nextInt(n);						// index of mutating gene
+		char g = genes.charAt(m) == '0' ? '1' : '0';	// mutated gene
+		return genes.substring(0, m-1) + g + genes.substring(m+1, n);
 	}
 	
 	int fitness(String genes) {
