@@ -3,3 +3,6 @@
 *.iml
 .classpath
 .project
+/bin/
+problem.txt
+solution.csv

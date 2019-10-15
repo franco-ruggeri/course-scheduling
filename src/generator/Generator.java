@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import solvers.annealing.Annealing;
+import solvers.genetic.Genetic;
 
 public class Generator {
     public static void main(String[] args) {
@@ -25,16 +26,21 @@ public class Generator {
                 new int[] { 7, 15 } // rangeCoursesLecturesCount
         );
 
+//        final Problem problem = generator.generate();
+//        final Annealing solver = new Annealing(10000000, .01, problem);
+//        final Solution solution = solver.simulate();
+        
         final Problem problem = generator.generate();
-        final Annealing solver = new Annealing(10000000, .01, problem);
+        final Genetic solver = new Genetic(problem, 100, 0.01, 10, 10000000);
         final Solution solution = solver.simulate();
-        // final int[][] schedule = solution.getSolution();
-        // for (int[] timeslot : schedule) {
-        // for (int lecture : timeslot) {
-        // System.err.print(lecture + "\t");
-        // }
-        // System.err.println();
-        // }
+        
+         final int[][] schedule = solution.getSolution();
+         for (int[] timeslot : schedule) {
+         for (int lecture : timeslot) {
+         System.err.print(lecture + "\t");
+         }
+         System.err.println();
+         }
         System.err.println("saving");
         saveProblem(problem, "problem.txt");
         saveSolution(solution, problem, "solution.csv");

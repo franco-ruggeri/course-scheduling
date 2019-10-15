@@ -8,7 +8,7 @@ import generator.Problem;
 import generator.Solution;
 
 /**
- * Implementation of genetic algorithms (GA) following the pseudo-code in
+ * Implementation of a genetic algorithm (GA) following the pseudo-code in
  * chapter 4 of "Artificial Intelligence, a modern approach - Russell, Norvig".
  */
 public class Genetic {
@@ -70,14 +70,23 @@ public class Genetic {
 	private Individual select() {
 		/*
 		 * Fitness proportionate selection (roulette-wheel selection):
-		 * 1. sum all fitness values -> s
-		 * 2. generate random value in (0, s) -> r
-		 * 3. go through the population summing the fitness values and stop when the sum
+		 * 1. sum all fitness values -> sum
+		 * 2. generate random value in (0, s) -> rand
+		 * 3. go through the population summing the fitness values -> partialSum
+		 * 4. stop when partialSum > rand 
 		 *  is greater than r
 		 */
-		int s = population.stream().mapToInt(Individual::getFitnessValue).sum();
-		int r = random.nextInt(s+1);
-		return population.stream().filter(i -> i.getFitnessValue() > r).findFirst().get();
+		int sum = population.stream().mapToInt(Individual::getFitnessValue).sum();
+		int rand = random.nextInt(sum);
+		int partialSum = 0;
+		for (Individual i : population) {
+			partialSum += i.getFitnessValue();
+			if (partialSum > rand)
+				return i;
+		}
+		
+		// should not arrive here
+		throw new RuntimeException("Wrong selection algorithm");
 	}
 	
 	private Individual reproduce(Individual x, Individual y) {
