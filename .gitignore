@@ -6,3 +6,7 @@
 /bin/
 problem.txt
 solution.csv
+.classpath
+.problem
+.settings
+bin

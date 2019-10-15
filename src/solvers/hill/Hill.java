@@ -1,5 +1,4 @@
-
-package solvers.annealing;
+package solvers.hill;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,21 +11,19 @@ import generator.Problem;
 import generator.Solution;
 
 /**
- * Annealing
+ * Hill
  */
-public class Annealing {
+public class Hill {
 
-    private int temperature;
-    private double coolingRate;
+    private int bestNeighbors;
     private final int courses;
     private final int[] coursesCount;
     private final int timeslots;
     private final int classrooms;
     private final Problem p;
 
-    public Annealing(int temperature, double coolingRate, Problem p) {
-        this.temperature = temperature;
-        this.coolingRate = coolingRate;
+    public Hill(int bestNeighbors, Problem p) {
+        this.bestNeighbors = bestNeighbors;
         this.p = p;
         this.courses = p.getCourseCount();
         this.coursesCount = p.getCourses();
@@ -34,51 +31,44 @@ public class Annealing {
         this.classrooms = p.getClassroomCount();
     }
 
-    public Solution simulate() {
+    public Solution solve() {
         int[][] schedule = new int[timeslots][classrooms];
         int[][] newSchedule = new int[timeslots][classrooms];
         int[][] bestSchedule = new int[timeslots][classrooms];
         int cost = 0;
         int newCost = 0;
         int bestCost = 0;
-        double keep = 0;
-        double r = 0;
+        boolean better = true;
         init(schedule);
         cost = Evaluator.evaluate(p, new Solution(schedule));
         bestCost = cost;
-        while (temperature > 1) {
-            for (int i = 0; i < timeslots; i++) {
-                newSchedule[i] = Arrays.copyOf(schedule[i], schedule[i].length);
-            }
-            swap(newSchedule);
-            newCost = Evaluator.evaluate(p, new Solution(newSchedule));
-            // System.err.println("Cost = "+cost);
-            // System.err.println("New Cost = "+newCost);
-            // System.err.println("Best Cost = "+bestCost);
-            if (newCost > cost) {
+        while (better) {
+            better = false;
+            for (int k = 0; k < bestNeighbors; k++) {
                 for (int i = 0; i < timeslots; i++) {
-                    schedule[i] = Arrays.copyOf(newSchedule[i], newSchedule[i].length);
+                    newSchedule[i] = Arrays.copyOf(schedule[i], schedule[i].length);
                 }
-                if (newCost > bestCost) {
-                    for (int i = 0; i < timeslots; i++) {
-                        bestSchedule[i] = Arrays.copyOf(newSchedule[i], newSchedule[i].length);
-                    }
-                    bestCost = newCost;
-                }
-                cost = newCost;
-            } else {
-                keep = Math.exp((cost - newCost) / temperature);
-                r = ThreadLocalRandom.current().nextDouble();
-                if (keep > r) {
+                swap(newSchedule);
+                newCost = Evaluator.evaluate(p, new Solution(newSchedule));
+                // System.err.println("Cost = "+cost);
+                // System.err.println("New Cost = "+newCost);
+                // System.err.println("Best Cost = "+bestCost);
+                if (newCost > cost) {
                     for (int i = 0; i < timeslots; i++) {
                         schedule[i] = Arrays.copyOf(newSchedule[i], newSchedule[i].length);
                     }
+                    if (newCost > bestCost) {
+                        for (int i = 0; i < timeslots; i++) {
+                            bestSchedule[i] = Arrays.copyOf(newSchedule[i], newSchedule[i].length);
+                        }
+                        bestCost = newCost;
+                    }
                     cost = newCost;
+                    better = true;
                 }
             }
-            temperature *= 1 - coolingRate;
-            // System.err.println("temperature = "+ temperature);
         }
+
         // for (int[] timeslot : schedule) {
         // for (int lecture : timeslot) {
         // System.out.print(lecture + "\t");

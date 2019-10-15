@@ -77,7 +77,7 @@ public class Evaluator {
             }
         }
         double optimal = Math.pow(((double) sum / (double) total),2);
-        return (int) (sum * optimal);
+        return (int) ((optimal>.1)?sum * optimal:sum);
     }
 
     static int minOverlaps(final Problem p, final Solution s) {

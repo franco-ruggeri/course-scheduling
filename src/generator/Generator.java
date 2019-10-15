@@ -14,9 +14,10 @@ import java.util.stream.Collectors;
 
 import solvers.annealing.Annealing;
 import solvers.genetic.Genetic;
+import solvers.hill.Hill;
 
 public class Generator {
-    static Generator predefined(){
+    static Generator predefined() {
         return new Generator(new int[] { 100, 500 }, // students
                 new int[] { 10, 11 }, // courses
                 new int[] { 20, 21 }, // days
@@ -31,17 +32,20 @@ public class Generator {
         final Generator generator = Generator.predefined();
 
         final Problem problem = generator.generate();
-        final Annealing solver = new Annealing(100000, .01, problem);
-        final Solution solution = solver.simulate();
+        //Annealing
+        // final Annealing solver = new Annealing(100000, .01, problem);
+        // final Solution solution = solver.simulate();
+        // Hill
+        final Hill solver = new Hill(1000, problem);
+        final Solution solution = solver.solve();
 //
 //        final Problem problem = generator.generate();
 //        final Genetic solver = new Genetic(problem, 100, 0.01, 10, 10000000);
 //        final Solution solution = solver.simulate();
         
-        System.err.println(solution);
+        // System.err.println(solution);
         System.err.println("saving");
         saveProblem(problem, "problem.txt");
-        System.out.println("HELO WORLD");
         saveSolution(solution, problem, "solution.csv");
         System.err.println("finish");
     }
@@ -172,7 +176,7 @@ public class Generator {
             writer.println(intArrayToString(p.getCourses()));
             writer.close();
         } catch (Exception e) {
-        	e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -180,7 +184,7 @@ public class Generator {
         final int len = a.length;
         String ans = "";
         for (int i = 0; i < len; i++) {
-        	int len2 = a[i].length;
+            int len2 = a[i].length;
             for (int j = 0; j < len2; j++) {
                 ans += a[i][j] + " ";
             }
@@ -192,20 +196,20 @@ public class Generator {
     static String intArrayToCSV(final int[][] a, final int days, final int hoursPerDay) {
         final int len2 = a[0].length;
         String ans = "Day/Classroom,Hour";
-        final String[] week = {"Monday","Tuesday", "Wednesday", "Thursday", "Friday"};
+        final String[] week = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
         // String ans = len + "\t" + len2 + "\n";
         // for (int i = 0; i < len; i++) {
-        //     for (int j = 0; j < len2; j++) {
-        //         ans += a[i][j] + ",";
-        //     }
-        //     ans += "\n";
+        // for (int j = 0; j < len2; j++) {
+        // ans += a[i][j] + ",";
+        // }
+        // ans += "\n";
         // }
         for (int cl = 0; cl < len2; cl++) {
-            ans += "," + (cl+1);
+            ans += "," + (cl + 1);
         }
         ans += "\n";
         for (int day = 0; day < days; day++) {
-            ans += week[day%5];
+            ans += week[day % 5];
             for (int hpd = 0; hpd < hoursPerDay; hpd++) {
                 int i = hpd * (day + 1);
                 ans += "," + hpd;
