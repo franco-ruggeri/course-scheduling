@@ -18,11 +18,11 @@ public class Generator {
     public static void main(String[] args) {
         final Generator generator = new Generator(new int[] { 100, 500 }, // students
                 new int[] { 10, 20 }, // courses
-                new int[] { 90, 120 }, // days
-                new int[] { 5, 6 }, // hoursPerDay
-                new int[] { 5, 10 }, // classrooms
+                new int[] { 20, 21 }, // days
+                new int[] { 4, 5 }, // hoursPerDay
+                new int[] { 5, 6 }, // classrooms
                 new int[] { 5, 8 }, // rangeStudentsCourseCount
-                new int[] { 7, 19 } // rangeCoursesLecturesCount
+                new int[] { 7, 15 } // rangeCoursesLecturesCount
         );
 
         final Problem problem = generator.generate();
@@ -35,6 +35,7 @@ public class Generator {
         // }
         // System.err.println();
         // }
+        System.err.println("saving");
         saveProblem(problem, "problem.txt");
         saveSolution(solution, problem, "solution.csv");
         System.err.println("finish");
@@ -170,10 +171,10 @@ public class Generator {
         }
     }
 
-    static String intArrayToString(int[][] a) {
+    static String intArrayToString(final int[][] a) {
         final int len = a.length;
         final int len2 = a[0].length;
-        String ans = len + "\t" + len2 + "\n";
+        String ans = len + " " + len2 + "\n";
         for (int i = 0; i < len; i++) {
             for (int j = 0; j < len2; j++) {
                 ans += a[i][j] + " ";
@@ -183,11 +184,10 @@ public class Generator {
         return ans;
     }
 
-    static String intArrayToCSV(int[][] a, int days, int hoursPerDay) {
-        final int len = a.length;
+    static String intArrayToCSV(final int[][] a, final int days, final int hoursPerDay) {
         final int len2 = a[0].length;
         String ans = "Day/Classroom,Hour";
-        String[] week = {"Monday","Tuesday", "Wednesday", "Thursday", "Friday"};
+        final String[] week = {"Monday","Tuesday", "Wednesday", "Thursday", "Friday"};
         // String ans = len + "\t" + len2 + "\n";
         // for (int i = 0; i < len; i++) {
         //     for (int j = 0; j < len2; j++) {
@@ -214,7 +214,7 @@ public class Generator {
         return ans;
     }
 
-    static String intArrayToString(int[] a) {
+    static String intArrayToString(final int[] a) {
         final int len = a.length;
         String ans = len + "\n";
         for (int i = 0; i < len; i++) {
