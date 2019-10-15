@@ -216,7 +216,7 @@ public class Generator {
 
     static String intArrayToString(final int[] a) {
         final int len = a.length;
-        String ans = len + "\n";
+        String ans = len + " ";
         for (int i = 0; i < len; i++) {
             ans += a[i] + " ";
         }
