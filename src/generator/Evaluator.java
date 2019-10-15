@@ -47,6 +47,7 @@ public class Evaluator {
         // System.err.println(groups);
         // the number of students that take each set of courses
         Map<List<Integer>, Integer> groupsCount = p.getGroupsCount();
+        int[] coursesCount = p.getCourses();
         // System.err.println(groupsCount);
         // System.err.println(groupsCount);
         // for each timeslot in the schedule
@@ -68,8 +69,15 @@ public class Evaluator {
                 }
             }
         }
-        // System.err.println(sum);
-        return sum;
+        // return sum;
+        int total = 0;
+        for (List<Integer> group : groups) {
+            for (int courseCode : group) {
+                total += groupsCount.get(group) * coursesCount[courseCode - 1];
+            }
+        }
+        double optimal = Math.pow(((double) sum / (double) total),2);
+        return (int) (sum * optimal);
     }
 
     static int minOverlaps(final Problem p, final Solution s) {
@@ -80,6 +88,7 @@ public class Evaluator {
         Set<List<Integer>> groups = p.getGroups();
         // the number of students that take each set of courses
         Map<List<Integer>, Integer> groupsCount = p.getGroupsCount();
+        int[] coursesCount = p.getCourses();
         // for each timeslot in the schedule
         for (int[] timeslot : schedule) {
             // againts each gruop
@@ -100,23 +109,30 @@ public class Evaluator {
                 }
             }
         }
-        return sum;
+        int total = 0;
+        for (List<Integer> group : groups) {
+            for (int courseCode : group) {
+                total += groupsCount.get(group) * coursesCount[courseCode - 1];
+            }
+        }
+        double optimal = Math.pow(((double) sum / (double) total),2);
+        return (int) (sum * optimal);
     }
 
-    static boolean isValid(final Problem p, final Solution s) {
+    public static boolean isValid(final Problem p, final Solution s) {
         int day = p.getDays();
         int hpd = p.getHoursPerDay();
         int cl = p.getClassroomCount();
         int[][] schedule = s.getSolution();
         int courseCount = p.getCourseCount();
-        int[] lectures = new int[courseCount];
+        int[] lectures = new int[courseCount + 1];
         int[] courses = p.getCourses();
         Set<List<Integer>> groups = p.getGroups();
         for (int d = 0; d < day; d++) {
             int ocurrance = 0;
             for (List<Integer> group : groups) {
                 for (int h = 0; h < hpd; h++) {
-                    int i = hpd * (day + 1);
+                    int i = h * (d + 1);
                     for (int j = 0; j < cl; j++) {
                         if (group.contains(schedule[i][j])) {
                             ocurrance++;
@@ -134,11 +150,40 @@ public class Evaluator {
             if (ocurrance > 1)
                 return false;
         }
-        for (int c = 0; c < courseCount; c++) {
-            if (courses[c] != lectures[c])
+        for (int c = 1; c < courseCount; c++) {
+            if (courses[c - 1] != lectures[c])
                 return false;
         }
         return true;
+    }
+
+    public static int lecturesTaken(final Problem p, final Solution s) {
+        int sum = 0;
+        // schedule found
+        int[][] schedule = s.getSolution();
+        // the different sets of courses the students take
+        Set<List<Integer>> groups = p.getGroups();
+        // the number of students that take each set of courses
+        Map<List<Integer>, Integer> groupsCount = p.getGroupsCount();
+        for (int[] timeslot : schedule) {
+            // againts each gruop
+            for (List<Integer> group : groups) {
+                int overlaps = 0;
+                // for every course given in the current timeslot
+                for (int course : timeslot) {
+                    // if the course is part of the group we increase overlaps
+                    if (group.contains(course)) {
+                        overlaps++;
+                    }
+                }
+                // if there are no overlaps we add the number of student in the group to the
+                // final result
+                if (overlaps == 1) {
+                    sum += groupsCount.get(group);
+                }
+            }
+        }
+        return sum;
     }
 
     public static void main(String[] args) {
