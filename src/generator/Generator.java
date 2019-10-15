@@ -37,6 +37,7 @@ public class Generator {
 //        System.err.println(solution);
         System.err.println("saving");
         saveProblem(problem, "problem.txt");
+//        System.out.println("HELO WORLD");
         saveSolution(solution, problem, "solution.csv");
         System.err.println("finish");
     }
@@ -124,7 +125,7 @@ public class Generator {
             reader.close();
             return s;
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
         return null;
     }
@@ -136,7 +137,7 @@ public class Generator {
             writer.print(intArrayToCSV(a, p.getDays(), p.getHoursPerDay()));
             writer.close();
         } catch (Exception e) {
-        	e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -216,7 +217,7 @@ public class Generator {
 
     static String intArrayToString(final int[] a) {
         final int len = a.length;
-        String ans = len + "\n";
+        String ans = len + " ";
         for (int i = 0; i < len; i++) {
             ans += a[i] + " ";
         }
