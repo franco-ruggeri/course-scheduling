@@ -50,11 +50,11 @@ public class Annealing {
                 newSchedule[i] = Arrays.copyOf(schedule[i], schedule[i].length);
             }
             swap(newSchedule);
+            newCost = Evaluator.evaluate(p, new Solution(newSchedule));
             // System.err.println("Cost = "+cost);
             // System.err.println("New Cost = "+newCost);
             // System.err.println("Best Cost = "+bestCost);
             cost = Evaluator.evaluate(p, new Solution(schedule));
-            newCost = Evaluator.evaluate(p, new Solution(newSchedule));
             if (newCost > cost) {
                 for (int i = 0; i < timeslots; i++) {
                     schedule[i] = Arrays.copyOf(newSchedule[i], newSchedule[i].length);
@@ -84,16 +84,16 @@ public class Annealing {
         // System.out.println();
         // }
         int total = 0;
-        int sum = 0;
         Map<List<Integer>, Integer> groups = p.getGroupsCount();
+        // int sum = 0;
         // for (int value : groups.values()) {
-        //     sum+= value;
+        // sum+= value;
         // }a
         // System.err.println(sum);
         // System.err.println(p.getStudentCount());
         for (List<Integer> group : p.getGroups()) {
             for (int courseCode : group) {
-                total += groups.get(group) * coursesCount[courseCode-1];
+                total += groups.get(group) * coursesCount[courseCode - 1];
             }
         }
         System.err.println("Total of lectures enrolled = " + total);

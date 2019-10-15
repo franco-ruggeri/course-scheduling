@@ -103,20 +103,20 @@ public class Evaluator {
         return sum;
     }
 
-    static boolean isValid(final Problem p, final Solution s) {
+    public static boolean isValid(final Problem p, final Solution s) {
         int day = p.getDays();
         int hpd = p.getHoursPerDay();
         int cl = p.getClassroomCount();
         int[][] schedule = s.getSolution();
         int courseCount = p.getCourseCount();
-        int[] lectures = new int[courseCount];
+        int[] lectures = new int[courseCount+1];
         int[] courses = p.getCourses();
         Set<List<Integer>> groups = p.getGroups();
         for (int d = 0; d < day; d++) {
             int ocurrance = 0;
             for (List<Integer> group : groups) {
                 for (int h = 0; h < hpd; h++) {
-                    int i = hpd * (day + 1);
+                    int i = h * (d + 1);
                     for (int j = 0; j < cl; j++) {
                         if (group.contains(schedule[i][j])) {
                             ocurrance++;
@@ -134,8 +134,8 @@ public class Evaluator {
             if (ocurrance > 1)
                 return false;
         }
-        for (int c = 0; c < courseCount; c++) {
-            if (courses[c] != lectures[c])
+        for (int c = 1; c < courseCount; c++) {
+            if (courses[c-1] != lectures[c])
                 return false;
         }
         return true;
