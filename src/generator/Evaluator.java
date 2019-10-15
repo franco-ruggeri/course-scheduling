@@ -45,8 +45,11 @@ public class Evaluator {
         int[][] schedule = s.getSolution();
         // the different sets of courses the students take 
         Set<List<Integer>> groups = p.getGroups();
+        // System.err.println(groups);
         // the number of students that take each set of courses
         Map<List<Integer>, Integer> groupsCount = p.getGroupsCount();
+        // System.err.println(groupsCount);
+        // System.err.println(groupsCount);
         // for each timeslot in the schedule
         for (int[] timeslot : schedule) {
             // againts each gruop
@@ -65,6 +68,7 @@ public class Evaluator {
                 }
             }
         }
+        // System.err.println(sum);
         return sum;
     }
 
