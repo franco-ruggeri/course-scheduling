@@ -1,3 +1,5 @@
 .vscode
 *.class
 *.iml
+.classpath
+.project
