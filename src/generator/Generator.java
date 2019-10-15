@@ -16,28 +16,32 @@ import solvers.annealing.Annealing;
 import solvers.genetic.Genetic;
 
 public class Generator {
-    public static void main(String[] args) {
-        final Generator generator = new Generator(new int[] { 100, 500 }, // students
-                new int[] { 10, 20 }, // courses
+    static Generator predefined(){
+        return new Generator(new int[] { 100, 500 }, // students
+                new int[] { 10, 11 }, // courses
                 new int[] { 20, 21 }, // days
                 new int[] { 4, 5 }, // hoursPerDay
                 new int[] { 5, 6 }, // classrooms
-                new int[] { 5, 8 }, // rangeStudentsCourseCount
+                new int[] { 9, 11 }, // rangeStudentsCourseCount
                 new int[] { 7, 15 } // rangeCoursesLecturesCount
         );
+    }
+
+    public static void main(String[] args) {
+        final Generator generator = Generator.predefined();
 
         final Problem problem = generator.generate();
         final Annealing solver = new Annealing(100000, .01, problem);
         final Solution solution = solver.simulate();
-        
+//
 //        final Problem problem = generator.generate();
 //        final Genetic solver = new Genetic(problem, 100, 0.01, 10, 10000000);
 //        final Solution solution = solver.simulate();
         
-//        System.err.println(solution);
+        System.err.println(solution);
         System.err.println("saving");
         saveProblem(problem, "problem.txt");
-//        System.out.println("HELO WORLD");
+        System.out.println("HELO WORLD");
         saveSolution(solution, problem, "solution.csv");
         System.err.println("finish");
     }
@@ -252,6 +256,7 @@ public class Generator {
         for (int i : c) {
             sum += i;
         }
+
         return capacity >= sum;
     }
 }
