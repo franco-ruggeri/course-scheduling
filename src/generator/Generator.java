@@ -26,21 +26,15 @@ public class Generator {
                 new int[] { 7, 15 } // rangeCoursesLecturesCount
         );
 
-//        final Problem problem = generator.generate();
-//        final Annealing solver = new Annealing(10000000, .01, problem);
-//        final Solution solution = solver.simulate();
-        
         final Problem problem = generator.generate();
-        final Genetic solver = new Genetic(problem, 100, 0.01, 10, 10000000);
+        final Annealing solver = new Annealing(10000000, .01, problem);
         final Solution solution = solver.simulate();
         
-         final int[][] schedule = solution.getSolution();
-         for (int[] timeslot : schedule) {
-         for (int lecture : timeslot) {
-         System.err.print(lecture + "\t");
-         }
-         System.err.println();
-         }
+//        final Problem problem = generator.generate();
+//        final Genetic solver = new Genetic(problem, 100, 0.01, 10, 10000000);
+//        final Solution solution = solver.simulate();
+        
+//        System.err.println(solution);
         System.err.println("saving");
         saveProblem(problem, "problem.txt");
         saveSolution(solution, problem, "solution.csv");
@@ -142,7 +136,7 @@ public class Generator {
             writer.print(intArrayToCSV(a, p.getDays(), p.getHoursPerDay()));
             writer.close();
         } catch (Exception e) {
-            System.out.println(e);
+        	e.printStackTrace();
         }
     }
 
@@ -156,7 +150,7 @@ public class Generator {
             reader.close();
             return p;
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
         return null;
     }
@@ -173,15 +167,15 @@ public class Generator {
             writer.println(intArrayToString(p.getCourses()));
             writer.close();
         } catch (Exception e) {
-            System.out.println(e);
+        	e.printStackTrace();
         }
     }
 
     static String intArrayToString(final int[][] a) {
         final int len = a.length;
-        final int len2 = a[0].length;
-        String ans = len + " " + len2 + "\n";
+        String ans = "";
         for (int i = 0; i < len; i++) {
+        	int len2 = a[i].length;
             for (int j = 0; j < len2; j++) {
                 ans += a[i][j] + " ";
             }

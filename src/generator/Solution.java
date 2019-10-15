@@ -15,4 +15,15 @@ public class Solution {
     public int[][] getSolution() {
         return solution;
     }
+    
+    @Override
+    public String toString() {
+    	StringBuffer sb = new StringBuffer();
+    	for (int t=0; t<solution.length; t++) {
+    		for (int cl=0; cl<solution[t].length; cl++)
+    			sb.append(solution[t][cl]).append("\t");
+    		sb.append("\n");
+    	}
+    	return sb.toString();
+    }
 }

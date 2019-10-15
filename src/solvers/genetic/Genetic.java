@@ -26,10 +26,11 @@ public class Genetic {
         this.maxTime = maxTime;
         this.random = new Random();
         
-        // init population with random states (complete representation of states!)
+        // init population with random states (complete representation, all slots filled)
         population = new LinkedList<>();
         for (int i=0; i<populationSize; i++)
 			population.add(new Individual(problem));
+//        population.stream().map(Individual::getSolution).forEach(System.err::println);
     }
 
 	public Solution simulate() {
@@ -77,7 +78,7 @@ public class Genetic {
 		 *  is greater than r
 		 */
 		int sum = population.stream().mapToInt(Individual::getFitnessValue).sum();
-		int rand = random.nextInt(sum);
+		int rand = random.nextInt(sum+1);
 		int partialSum = 0;
 		for (Individual i : population) {
 			partialSum += i.getFitnessValue();

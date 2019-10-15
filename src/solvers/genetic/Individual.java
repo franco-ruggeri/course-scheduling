@@ -1,5 +1,6 @@
 package solvers.genetic;
 
+import java.util.Arrays;
 import java.util.Random;
 
 import generator.Evaluator;
@@ -30,24 +31,42 @@ class Individual {
 	}
 	
 	/**
-	 * Constructs an individual with random genes.
+	 * Constructs an individual with random (but valid) genes.
 	 * 
 	 * @param problem
 	 */
 	public Individual(Problem problem) {
-		int genesPerCourse = genesPerCourse(problem);
-		int totGenes;
-		StringBuffer sb = new StringBuffer();
-		
-        // we need #Timeslots x #Classrooms x log2(#Courses) genes
-        totGenes = problem.getTimeslotsCount() * problem.getClassroomCount() * genesPerCourse;
-        for (int g=0; g<totGenes; g++)
-        	sb.append(random.nextInt(2) == 0 ? '0' : '1');
+		int timeslotCount = problem.getTimeslotsCount();
+        int classroomCount = problem.getClassroomCount();
+        int courseCount = problem.getCourseCount();
+        int[][] schedule = new int[timeslotCount][classroomCount];
+        int[] courseLectureCount = problem.getCourses();
+        int[] courseLectureRemaining = Arrays.copyOf(courseLectureCount, courseCount);
+        int completedCourseCount = 0;
+        boolean complete = false;
+        
+        for (int t = 0; t < timeslotCount && !complete; t++) {
+            for (int cl = 0; cl < classroomCount && !complete; cl++) {
+            	boolean found = false;
+                int course = 0;
+                while (!found) {
+                    course = random.nextInt(courseCount) + 1;
+                    if (courseLectureRemaining[course-1] > 0)
+                    	found = true;
+                }
+                schedule[t][cl] = course;
+                courseLectureRemaining[course-1]--;
+                if (courseLectureRemaining[course-1] == 0)
+                	completedCourseCount++;
+                if (completedCourseCount == courseCount)
+                	complete = true;
+            }
+        }
         
         this.problem = problem;
-        this.genes = sb.toString();
-        this.solution = toSolution(problem, genes);
-        this.fitnessValue = Evaluator.evaluate(problem, this.solution);
+        this.solution = new Solution(schedule);
+        this.genes = toGenes(problem, solution);
+		this.fitnessValue = Evaluator.evaluate(problem, solution);
 	}
 	
 	/**
@@ -71,7 +90,7 @@ class Individual {
 	 */
 	public void mutate() {
 		int n = genes.length();
-		int m = random.nextInt(n);						// index of mutating gene
+		int m = random.nextInt(n+1);					// index of mutating gene
 		char g = genes.charAt(m) == '0' ? '1' : '0';	// mutated gene
 		genes = genes.substring(0, m-1) + g + genes.substring(m+1, n);
 	}
@@ -95,12 +114,12 @@ class Individual {
 	 */
 	private static Solution toSolution(Problem problem, String genes) {
 		int timeslotCount = problem.getTimeslotsCount();
-        int classrooomCount = problem.getClassroomCount();
-        int genesPerCourse = genesPerCourse(problem);;
-        int[][] schedule = new int[timeslotCount][classrooomCount];
+        int classroomCount = problem.getClassroomCount();
+        int genesPerCourse = genesPerCourse(problem);
+        int[][] schedule = new int[timeslotCount][classroomCount];
         
         for (int t=0; t<timeslotCount; t++) {
-        	for (int cl=0; cl<classrooomCount; cl++) {
+        	for (int cl=0; cl<classroomCount; cl++) {
         		int course = 0;
         		int baseIndex = t * cl * genesPerCourse;
         		
@@ -123,14 +142,14 @@ class Individual {
 	 */
 	static private String toGenes(Problem problem, Solution solution) {
         int timeslotCount = problem.getTimeslotsCount();
-        int classrooomCount = problem.getClassroomCount();
+        int classroomCount = problem.getClassroomCount();
         int genesPerCourse = genesPerCourse(problem);
         int[][] schedule = solution.getSolution();
         StringBuffer sb = new StringBuffer();
         
         // from end to start because of the conversion to binary (add in head)
 		for (int t=timeslotCount-1; t>=0; t--) {
-			for (int cl=classrooomCount-1; cl>=0; cl--) {
+			for (int cl=classroomCount-1; cl>=0; cl--) {
 				int course = schedule[t][cl];
 				int nGenes=0;
 				
@@ -152,14 +171,20 @@ class Individual {
 		return sb.toString();
 	}
 	
+	/**
+	 * Computes the minimum number of genes necessary to represent a course.
+	 * 
+	 * @param problem
+	 * @return
+	 */
 	static private int genesPerCourse(Problem problem) {
 		int courseCount = problem.getCourseCount();
 		int genesPerCourse;
 		
-		// log2(courseCount), truncated if not an integer
-        genesPerCourse = (int) (Math.log(courseCount) / Math.log(2));
+		// log2(courseCount+1), truncated if not an integer (+1 because course IDs start from 1)
+        genesPerCourse = (int) (Math.log(courseCount+1) / Math.log(2));
         // if it had been truncated, we have to add 1
-        // e.g. for courseCount=7 we need 3 bits, but log2(7) is truncated to 2
+        // e.g. for courseCount=6 we need 3 bits, but log2(7) is truncated to 2
         genesPerCourse = Math.pow(2, genesPerCourse) != courseCount ? genesPerCourse+1 : genesPerCourse;
         
         return genesPerCourse;
