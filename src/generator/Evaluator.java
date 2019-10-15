@@ -1,6 +1,5 @@
 package generator;
 
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,7 +42,7 @@ public class Evaluator {
         int sum = 0;
         // schedule found
         int[][] schedule = s.getSolution();
-        // the different sets of courses the students take 
+        // the different sets of courses the students take
         Set<List<Integer>> groups = p.getGroups();
         // System.err.println(groups);
         // the number of students that take each set of courses
@@ -62,7 +61,8 @@ public class Evaluator {
                         overlaps++;
                     }
                 }
-                // if there are no overlaps we add the number of student in the group to the final result
+                // if there are no overlaps we add the number of student in the group to the
+                // final result
                 if (overlaps == 1) {
                     sum += groupsCount.get(group);
                 }
@@ -76,7 +76,7 @@ public class Evaluator {
         int sum = 0;
         // schedule found
         int[][] schedule = s.getSolution();
-        // the different sets of courses the students take 
+        // the different sets of courses the students take
         Set<List<Integer>> groups = p.getGroups();
         // the number of students that take each set of courses
         Map<List<Integer>, Integer> groupsCount = p.getGroupsCount();
@@ -94,8 +94,9 @@ public class Evaluator {
                 }
                 // if there is any overlap
                 if (overlaps > 1) {
-                    // we add the number of students in the group times the number of overlaps to the final result
-                    sum += (overlaps-1) * groupsCount.get(group);
+                    // we add the number of students in the group times the number of overlaps to
+                    // the final result
+                    sum += (overlaps - 1) * groupsCount.get(group);
                 }
             }
         }
@@ -103,14 +104,45 @@ public class Evaluator {
     }
 
     static boolean isValid(final Problem p, final Solution s) {
-        //A course has to have X amount of lectures in the solution where X is the amount of lecutures given by the problem.
-        //course does not exist e.g. negative numbers
-
-        return false;
+        int day = p.getDays();
+        int hpd = p.getHoursPerDay();
+        int cl = p.getClassroomCount();
+        int[][] schedule = s.getSolution();
+        int courseCount = p.getCourseCount();
+        int[] lectures = new int[courseCount];
+        int[] courses = p.getCourses();
+        Set<List<Integer>> groups = p.getGroups();
+        for (int d = 0; d < day; d++) {
+            int ocurrance = 0;
+            for (List<Integer> group : groups) {
+                for (int h = 0; h < hpd; h++) {
+                    int i = hpd * (day + 1);
+                    for (int j = 0; j < cl; j++) {
+                        if (group.contains(schedule[i][j])) {
+                            ocurrance++;
+                        }
+                        lectures[schedule[i][j]]++;
+                        if (ocurrance > 1)
+                            break;
+                    }
+                    if (ocurrance > 1)
+                        break;
+                }
+                if (ocurrance > 1)
+                    break;
+            }
+            if (ocurrance > 1)
+                return false;
+        }
+        for (int c = 0; c < courseCount; c++) {
+            if (courses[c] != lectures[c])
+                return false;
+        }
+        return true;
     }
 
     public static void main(String[] args) {
-        int[][] students = new int[][] { { 1, 2, 3 }, { 2, 3, 1 }, { 4, 5, 6 }, { 1, 2, 3,4,5} };
+        int[][] students = new int[][] { { 1, 2, 3 }, { 2, 3, 1 }, { 4, 5, 6 }, { 1, 2, 3, 4, 5 } };
         Map<List<Integer>, Integer> groupsCount = new HashMap<List<Integer>, Integer>();
         Set<List<Integer>> groups = new HashSet<List<Integer>>();
 
