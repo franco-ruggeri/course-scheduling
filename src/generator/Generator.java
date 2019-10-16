@@ -17,7 +17,7 @@ import solvers.genetic.Genetic;
 import solvers.hill.Hill;
 
 public class Generator {
-    static Generator predefined() {
+    public static Generator predefined() {
         return new Generator(new int[] { 100, 500 }, // students
                 new int[] { 10, 11 }, // courses
                 new int[] { 20, 21 }, // days
