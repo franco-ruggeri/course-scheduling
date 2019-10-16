@@ -4,5 +4,6 @@
 .classpath
 .project
 /bin/
-problem.txt
-solution.csv
+Problem.txt
+Annealing.csv
+Genetic.csv

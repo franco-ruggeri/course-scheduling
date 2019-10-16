@@ -6,11 +6,12 @@ import java.util.Random;
 
 import generator.Problem;
 import generator.Solution;
+import solvers.Solver;
 
 /**
  * Implementation of a genetic algorithm (GA)
  */
-public class Genetic {
+public class Genetic implements Solver {
     private final int populationSize;
     private List<Chromosome> population;
     private double mutationProbability;
@@ -31,10 +32,11 @@ public class Genetic {
         normalizeFitnessValues();
     }
 
-	public Solution simulate() {
+	public Solution solve() {
 		Chromosome bestIndividual = null;
 		double maxFitnessValue;
 		long startTime = System.currentTimeMillis();
+		long remainingTime;
 		
     	do {
     		// evolution
@@ -62,8 +64,8 @@ public class Genetic {
 	    	maxFitnessValue = aux;	// aux is used because closures require effective final variables
 	    	
 	    	// terminate when time runs out or when a good-enough individual has been found
-//	    	System.err.println("Remaining time: " + (maxTime - System.currentTimeMillis() + startTime));
-		} while (System.currentTimeMillis() - startTime < maxTime && maxFitnessValue < enoughFitness);
+	    	remainingTime = System.currentTimeMillis() - startTime;
+		} while (remainingTime < maxTime && maxFitnessValue < enoughFitness);
     	
 	    return bestIndividual.getSolution();
     }
@@ -95,13 +97,8 @@ public class Genetic {
 	}
 	
 	private void normalizeFitnessValues() {
-		System.err.print("Fitness values: ");
-		population.stream().mapToDouble(Chromosome::getFitnessValue).forEach(fv -> System.err.print(fv + " "));
-		System.err.println();
 		double sum = population.stream().mapToDouble(Chromosome::getFitnessValue).sum();
-		System.err.println("Sum: " + sum);
 		population.forEach(c -> c.setFitnessValue(c.getFitnessValue() / sum));
-		System.err.println("Sum: " + population.stream().mapToDouble(Chromosome::getFitnessValue).sum());
 	}
 	
 }

@@ -3,18 +3,19 @@ package solvers.annealing;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+//import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import generator.Evaluator;
 import generator.Problem;
 import generator.Solution;
+import solvers.Solver;
 
 /**
  * Annealing
  */
-public class Annealing {
+public class Annealing implements Solver {
 
     private int temperature;
     private double coolingRate;
@@ -34,7 +35,7 @@ public class Annealing {
         this.classrooms = p.getClassroomCount();
     }
 
-    public Solution simulate() {
+    public Solution solve() {
         int[][] schedule = new int[timeslots][classrooms];
         int[][] newSchedule = new int[timeslots][classrooms];
         int[][] bestSchedule = new int[timeslots][classrooms];
@@ -83,21 +84,19 @@ public class Annealing {
         // }
         // System.out.println();
         // }
-        int total = 0;
-        int sum = 0;
-        Map<List<Integer>, Integer> groups = p.getGroupsCount();
+//        int total = 0;
+//        int sum = 0;
+//        Map<List<Integer>, Integer> groups = p.getGroupsCount();
         // for (int value : groups.values()) {
         //     sum+= value;
         // }a
         // System.err.println(sum);
         // System.err.println(p.getStudentCount());
-        for (List<Integer> group : p.getGroups()) {
-            for (int courseCode : group) {
-                total += groups.get(group) * coursesCount[courseCode-1];
-            }
-        }
-        System.err.println("Total of lectures enrolled = " + total);
-        System.err.println("Lectures taken = " + bestCost);
+//        for (List<Integer> group : p.getGroups()) {
+//            for (int courseCode : group) {
+//                total += groups.get(group) * coursesCount[courseCode-1];
+//            }
+//        }
         return new Solution(bestSchedule);
     }
 

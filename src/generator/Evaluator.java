@@ -1,16 +1,9 @@
 package generator;
 
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import solvers.genetic.Chromosome;
 
 public class Evaluator {
     final static Heuristics CHOSEN = Heuristics.MAXLECTURES;
