@@ -123,24 +123,27 @@ public class Evaluator {
         int timeslots = p.getTimeslotsCount();
         int cl = p.getClassroomCount();
         int[][] schedule = s.getSolution();
+
         int courseCount = p.getCourseCount();
-        int[] lectures = new int[courseCount + 1];
+        int[] lectures = new int[courseCount];
+
         int[] courses = p.getCourses();
         for (int i = 0; i < timeslots; i++) {
-            for (int course : courses) {
-                int ocurrance = 0;
+            for (int course = 1; course <= courseCount; course++) {
+                boolean ocurrance = false;
                 for (int j = 0; j < cl; j++) {
                     if (course == schedule[i][j]) {
-                        ocurrance++;
+                        if (ocurrance) {
+                            return false;
+                        }
+                        ocurrance = true;
+                        lectures[course-1]++;
                     }
-                    lectures[schedule[i][j]]++;
                 }
-                if (ocurrance > 1)
-                    return false;
             }
         }
         for (int c = 1; c < courseCount; c++) {
-            if (courses[c - 1] != lectures[c])
+            if (courses[c] != lectures[c])
                 return false;
         }
         return true;

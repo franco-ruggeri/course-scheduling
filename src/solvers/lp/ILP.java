@@ -88,10 +88,10 @@ public class ILP {
         lpw.setMinProblem(true);
         //lpw.setAllVariablesInteger();
         LPSolution solution = lpw.solve();
-        System.out.println(lpw.getLP().convertToCPLEX());
-        System.out.println("solution");
-        System.out.println(solution);
-        System.out.println(solution.getBoolean(getT(0, 0)));
+//        System.out.println(lpw.getLP().convertToCPLEX());
+//        System.out.println("solution");
+//        System.out.println(solution);
+//        System.out.println(solution.getBoolean(getT(0, 0)));
 
         //solution to Solution
         int[][] sol = new int[timeSlots][classRoomCount];
