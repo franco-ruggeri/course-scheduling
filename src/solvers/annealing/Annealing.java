@@ -79,20 +79,8 @@ public class Annealing {
             temperature *= 1 - coolingRate;
             // System.err.println("temperature = "+ temperature);
         }
-        // for (int[] timeslot : schedule) {
-        // for (int lecture : timeslot) {
-        // System.out.print(lecture + "\t");
-        // }
-        // System.out.println();
-        // }
         int total = 0;
         Map<List<Integer>, Integer> groups = p.getGroupsCount();
-        // int sum = 0;
-        // for (int value : groups.values()) {
-        // sum+= value;
-        // }a
-        // System.err.println(sum);
-        // System.err.println(p.getStudentCount());
         for (List<Integer> group : p.getGroups()) {
             for (int courseCode : group) {
                 total += groups.get(group) * coursesCount[courseCode - 1];

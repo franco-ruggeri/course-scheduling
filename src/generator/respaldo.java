@@ -2,10 +2,7 @@ package generator;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,9 +11,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import solvers.annealing.Annealing;
+import solvers.genetic.Genetic;
+import solvers.hill.Hill;
 
 public class Generator {
     static Generator predefined() {
@@ -34,27 +32,24 @@ public class Generator {
         final Generator generator = Generator.predefined();
 
         final Problem problem = generator.generate();
-        // Annealing
+        //Annealing
         final Annealing solver = new Annealing(1000000, .003, problem);
         final Solution solution = solver.simulate();
         // Hill
-        // final Hill solver = new Hill(1000, problem);
-        // final Solution solution = solver.solve();
-        // //
-        // final Problem problem = generator.generate();
-        // final Genetic solver = new Genetic(problem, 100, 0.01, 10, 10000000);
-        // final Solution solution = solver.simulate();
-
+//         final Hill solver = new Hill(1000, problem);
+//         final Solution solution = solver.solve();
+// //
+//        final Problem problem = generator.generate();
+//        final Genetic solver = new Genetic(problem, 100, 0.01, 10, 10000000);
+//        final Solution solution = solver.simulate();
+        
         // System.err.println(solution);
         System.err.println("saving");
-        // saveProblem(problem, "problem.txt");
-        // saveSolution(solution, "solution.txt");
-        final Problem problemr  = readProblem("problem.txt");
-        final Solution solutionr = readSolution("solution.txt");
-        System.err.println(problemr);
-        // saveSolutionHuman(solution, problem, "solutionHuman.csv");
+        saveProblem(problem, "problem.txt");
+        saveSolution(solution, problem, "solution.csv");
         System.err.println("finish");
     }
+
     // 0 means no course
     private final int[] rangeStudents;
     private final int[] rangeCourses;
@@ -131,42 +126,45 @@ public class Generator {
         return range[0] + rnd.nextInt(diff);
     }
 
-    static void saveSolution(final Solution s, final String loc) {
+    static Solution readSolution(final String loc) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(loc));
+            Solution s = new Solution(stringToDoubleArray(reader.readLine()));
+            reader.close();
+            return s;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    static void saveSolution(final Solution s, final Problem p, final String loc) {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
             final int[][] a = s.getSolution();
-            writer.print(intArrayToString(a));
+            writer.print(intArrayToCSV(a, p.getDays(), p.getHoursPerDay()));
             writer.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    static void saveSolutionHuman(final Solution s, final Problem p, final String loc) {
+    static Problem readProblem(final String loc) {
         try {
-            PrintWriter writer = new PrintWriter(loc, "UTF-8");
-            final int[][] a = s.getSolution();
-            writer.print(intArrayToHuman(a, p.getDays(), p.getHoursPerDay()));
-            writer.close();
+            BufferedReader reader = new BufferedReader(new FileReader(loc));
+            final String[] splitOne = reader.readLine().split(" ");
+            final Problem p = new Problem(Integer.parseInt(splitOne[0]), Integer.parseInt(splitOne[1]),
+                    Integer.parseInt(splitOne[2]), Integer.parseInt(splitOne[3]), Integer.parseInt(splitOne[4]),
+                    stringToDoubleArray(reader.readLine()), stringToArray(reader.readLine()));
+            reader.close();
+            return p;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     static void saveProblem(final Problem p, final String loc) {
-        try {
-            PrintWriter writer = new PrintWriter(loc, "UTF-8");
-            writer.println(p.getStudentCount() + "," + p.getCourseCount() + "," + p.getDays() + "," + p.getHoursPerDay()
-                    + "," + p.getClassroomCount());
-            writer.print(intArrayToString(p.getStudents()));
-            writer.print(intArrayToString(p.getCourses()));
-            writer.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    static void saveProblemHuman(final Problem p, final String loc) {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
             writer.println("students, courses, timeslots, classrooms");
@@ -182,64 +180,30 @@ public class Generator {
         }
     }
 
-    static Problem readProblem(final String loc) {
-        List<String> lines = new ArrayList<>();
-        try (Stream<String> stream = Files.lines(Paths.get(loc))) {
-            lines = stream.collect(Collectors.toList());
-            stream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        String[] splitOne = lines.get(0).split(",");
-        int studentCount = Integer.parseInt(lines.get(1));
-        int[][] students = new int[studentCount][];
-        int start = 2;
-        for (int i = 0; i < studentCount; i++) {
-            students[i] = stringToArray(lines.get(i + start));
-        }
-        start += studentCount;
-        int[] courses = stringToArray(lines.get(start));
-        final Problem p = new Problem(Integer.parseInt(splitOne[0]), Integer.parseInt(splitOne[1]),
-                Integer.parseInt(splitOne[2]), Integer.parseInt(splitOne[3]), Integer.parseInt(splitOne[4]), students,
-                courses);
-        return p;
-    }
-
-    static Solution readSolution(final String loc) {
-        List<String> lines = new ArrayList<>();
-        try (Stream<String> stream = Files.lines(Paths.get(loc))) {
-            lines = stream.collect(Collectors.toList());
-            stream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        int timeslots = Integer.parseInt(lines.get(0));
-        int[][] schedule = new int[timeslots][];
-        for (int i = 0; i < timeslots; i++) {
-            schedule[i] = stringToArray(lines.get(i + 1));
-        }
-        final Solution s = new Solution(schedule);
-        return s;
-    }
-
     static String intArrayToString(final int[][] a) {
         final int len = a.length;
-        String ans = len + "\n";
+        String ans = "";
         for (int i = 0; i < len; i++) {
             int len2 = a[i].length;
             for (int j = 0; j < len2; j++) {
-                ans += a[i][j] + ",";
+                ans += a[i][j] + " ";
             }
-            ans = ans.substring(0, ans.length() - 1);
             ans += "\n";
         }
         return ans;
     }
 
-    static String intArrayToHuman(final int[][] a, final int days, final int hoursPerDay) {
+    static String intArrayToCSV(final int[][] a, final int days, final int hoursPerDay) {
         final int len2 = a[0].length;
         String ans = "Day/Classroom,Hour";
         final String[] week = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
+        // String ans = len + "\t" + len2 + "\n";
+        // for (int i = 0; i < len; i++) {
+        // for (int j = 0; j < len2; j++) {
+        // ans += a[i][j] + ",";
+        // }
+        // ans += "\n";
+        // }
         for (int cl = 0; cl < len2; cl++) {
             ans += "," + (cl + 1);
         }
@@ -261,26 +225,25 @@ public class Generator {
 
     static String intArrayToString(final int[] a) {
         final int len = a.length;
-        String ans = "";
+        String ans = len + " ";
         for (int i = 0; i < len; i++) {
-            ans += a[i] + ",";
+            ans += a[i] + " ";
         }
-        ans = ans.substring(0, ans.length() - 1);
         ans += "\n";
         return ans;
     }
 
     static int[] stringToArray(String s) {
-        final String[] split = s.split(",");
-        final int[] a = new int[split.length];
+        final String[] split = s.split(" ");
+        final int[] a = new int[Integer.parseInt(split[0])];
         for (int i = 0; i < a.length; i++) {
-            a[i] = Integer.parseInt(split[i]);
+            a[i] = Integer.parseInt(split[i + 1]);
         }
         return a;
     }
 
     static int[][] stringToDoubleArray(String s) {
-        final String[] split = s.split(",");
+        final String[] split = s.split(" ");
         final int[][] a = new int[Integer.parseInt(split[0])][Integer.parseInt(split[1])];
         for (int i = 0; i < a.length; i++) {
             for (int j = 0; j < a[0].length; j++) {
