@@ -34,7 +34,7 @@ public class Main {
         // generate solvers
         List<Solver> solvers = new LinkedList<>();
         solvers.add(new Annealing(10000000, .01, problem));
-        solvers.add(new Genetic(problem, 100, 0.05, 1500, 60000));
+        solvers.add(new Genetic(problem, 100, 0.05, Double.MAX_VALUE, 60000));
 //        solvers.add(new ILP(problem));
         
         // solve problem and evaluate performance
@@ -50,11 +50,10 @@ public class Main {
         	System.out.println();
         	System.out.println("Solver: " + s.getClass().getSimpleName());
         	System.out.println("Time: " + ((end-start)/1000) + " seconds");
-        	System.out.println("Score: " + Evaluator.evaluate(problem, solution));
         	System.out.println("Total desired lectures: " + Evaluator.countDesiredLectures(problem));
 			System.out.println("Total scheduled lectures: " + Evaluator.countScheduledLectures(problem, solution));
-			System.out.println("Total enrolled lectures: " + Evaluator.countEnrolledLectures(problem));
-	        System.out.println("Total taken lectures: " + Evaluator.countTakenLectures(problem, solution));
+			System.out.println("Total unfeasible lectures: " + Evaluator.countUnfeasibleLectures(problem, solution));
+	        System.out.println("Total overlaps: " + Evaluator.countOverlaps(problem, solution));
         });
     }
     

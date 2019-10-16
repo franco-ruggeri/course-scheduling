@@ -195,4 +195,46 @@ public class Evaluator {
 	    }
 	    return total;
     }
+
+	public static int countOverlaps(Problem problem, Solution solution) {
+    	Map<List<Integer>, Integer> studentGroups = problem.getGroupsCount();
+    	int total = 0;
+    	
+    	for (int[] timeslot : solution.getSolution()) {
+            for (Map.Entry<List<Integer>, Integer> e : studentGroups.entrySet()) {
+            	List<Integer> courses = e.getKey();
+            	int nStudents = e.getValue(); 
+                int overlaps = -1;	// -1 so that 1 lecture is not considered overlap
+                
+                for (int course : timeslot)
+                    if (courses.contains(course))
+                        overlaps++;
+                
+                if (overlaps > 0)
+                	total += overlaps * nStudents;
+            }
+        }
+    	
+    	return total;
+	}
+	
+	public static int countUnfeasibleLectures(Problem problem, Solution solution) {
+		int total = 0;
+		boolean[] lectureInTimeslot = new boolean[problem.getCourseCount()];
+		
+		for (int[] timeslot : solution.getSolution()) {
+			Arrays.fill(lectureInTimeslot, false);
+			for (int course : timeslot) {
+				if (course > 0) {
+					if (lectureInTimeslot[course-1])
+						total++;
+					else
+						lectureInTimeslot[course-1] = true;
+				}
+			}
+		}
+		
+		return total;
+	}
+	
 }
