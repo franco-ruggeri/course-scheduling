@@ -82,6 +82,15 @@ public class Problem {
         return s;
     }
 
+    public boolean compare(final Problem p){
+        return (studentCount == p.getStudentCount() &&
+                courseCount == p.getCourseCount() &&
+                timeslotsCount == p.getTimeslotsCount() &&
+                classroomCount == p.getClassroomCount() &&
+                students.equals(p.getStudents()) &&
+                courses.equals(p.getCourses()));
+    }
+
     public int getCourseCount() {
         return courseCount;
     }
