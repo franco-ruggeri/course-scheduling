@@ -21,45 +21,103 @@ import solvers.lp.ILP;
 public class Generator {
     public static Generator predefined() {
         return new Generator(new int[] { 10, 15 }, // students
-                new int[] { 7, 8 }, // courses
-                new int[] { 4, 5 }, // days
-                new int[] { 4, 5 }, // hoursPerDay
-                new int[] { 5, 6 }, // classrooms
+                new int[] { 7, 10 }, // courses
+                new int[] { 1, 2 }, // days
+                new int[] { 5, 15 }, // hoursPerDay
+                new int[] { 3, 5 }, // classrooms
                 new int[] { 3, 5 }, // rangeStudentsCourseCount
-                new int[] { 7, 15 } // rangeCoursesLecturesCount
+                new int[] { 3, 5 } // rangeCoursesLecturesCount
         );
     }
 
     public static void main(String[] args) {
-        final String ploc = "problem.txt";
-        final String sloc = "solution.txt";
-        final String shloc = "solution.csv";
+        String ploc = "ps0#";
         final Generator generator = Generator.predefined();
-        final Problem p = generator.generate();
-        final Annealing annealing = new Annealing(100000, .01, p);
-        final Solution solA = annealing.solve();
+        final int testCases = 5;
+        for (int i = 0; i < testCases; i++) {
+            final Problem p = generator.generate();
+            saveProblem(p, ploc + i + ".txt");
+        }
 
-        // System.out.println("ANN: isvalid: " + Evaluator.isValid(p, solA));
-        // System.out.println("ANN " + Evaluator.evaluate(p, solA));
+        long totalTimeA = 0;
+        int scoreA = 0;
+        int invalidA = 0;
+        double scheduledA = 0;
+        double takenA = 0;
+        for (int i = 0; i < testCases; i++) {
+            System.out.println("ANN"+i);
+            final Problem p = readProblem(ploc + i + ".txt");
+            final Annealing annealing = new Annealing(1000000, .01, p);
+            final long start = System.currentTimeMillis();
+            final Solution s = annealing.solve();
+            final long time = System.currentTimeMillis() - start;
+            totalTimeA += time;
+            scoreA += Evaluator.evaluate(p, s);
+            invalidA += Evaluator.isValid(p, s)?0:1;
+            scheduledA += Evaluator.countScheduledLectures(p, s)/ (double)Evaluator.countDesiredLectures(p);
+//            System.out.println(scheduled);
+            takenA += Evaluator.countTakenLectures(p, s)/ (double)Evaluator.countEnrolledLectures(p);
+        }
+        System.out.println("ANN ------------------------------------------------------------------------------------");
+        System.out.println("TOTime: " + totalTimeA + " - AVG: " + totalTimeA/testCases);
+        System.out.println("SCORE: " + scoreA + " - AVG: " + scoreA/testCases);
+        System.out.println("Invalid ans: " + invalidA + " - AVG: " + invalidA/testCases);
+        System.out.println("Scheduled: " + scheduledA + " - AVG: " + scheduledA/testCases);
+        System.out.println("Taken: " + takenA + " - AVG: " + takenA/testCases);
 
-        // final ILP ilp = new ILP(p);
-        // final Solution solILP = ilp.solve();
+        long totalTimeG = 0;
+        int scoreG = 0;
+        int invalidG = 0;
+        double scheduledG = 0;
+        double takenG = 0;
+        for (int i = 0; i < testCases; i++) {
+            System.out.println("GEN"+i);
+            final Problem p = readProblem(ploc + i + ".txt");
+            final Genetic gen = new Genetic(p, 100, 0.2, 500, 30000);
+            final long start = System.currentTimeMillis();
+            final Solution s = gen.solve();
+            final long time = System.currentTimeMillis() - start;
+            totalTimeG += time;
+            scoreG += Evaluator.evaluate(p, s);
+            invalidG += Evaluator.isValid(p, s)?0:1;
+            scheduledG += Evaluator.countScheduledLectures(p, s)/ (double)Evaluator.countDesiredLectures(p);
+//            System.out.println(scheduled);
+            takenG += Evaluator.countTakenLectures(p, s)/ (double)Evaluator.countEnrolledLectures(p);
+        }
+        System.out.println("GEN ------------------------------------------------------------------------------------");
+        System.out.println("TOTime: " + totalTimeG + " - AVG: " + totalTimeG/testCases);
+        System.out.println("SCORE: " + scoreG + " - AVG: " + scoreG/testCases);
+        System.out.println("Invalid ans: " + invalidG + " - AVG: " + invalidG/testCases);
+        System.out.println("Scheduled: " + scheduledG + " - AVG: " + scheduledG/testCases);
+        System.out.println("Taken: " + takenG + " - AVG: " + takenG/testCases);
 
-        // System.out.println("ILP: isvalid: " + Evaluator.isValid(p, solILP));
-        // System.out.println("ILP " + Evaluator.evaluate(p, solILP));
-        // System.out.println(solILP.toString());
+        long totalTimeI = 0;
+        int scoreI = 0;
+        int invalidI = 0;
+        double scheduledI = 0;
+        double takenI = 0;
+        for (int i = 0; i < testCases; i++) {
+            System.out.println("ILP"+i);
+            final Problem p = readProblem(ploc + i + ".txt");
+            final ILP ilp = new ILP(p);
+            final long start = System.currentTimeMillis();
+            final Solution s = ilp.solve();
+            final long time = System.currentTimeMillis() - start;
+            totalTimeI += time;
+            scoreI += Evaluator.evaluate(p, s);
+            invalidI += Evaluator.isValid(p, s)?0:1;
+            scheduledI += Evaluator.countScheduledLectures(p, s)/ (double)Evaluator.countDesiredLectures(p);
+//            System.out.println(scheduled);
+            takenI += Evaluator.countTakenLectures(p, s)/ (double)Evaluator.countEnrolledLectures(p);
+        }
 
+        System.out.println("ILP ------------------------------------------------------------------------------------");
+        System.out.println("TOTime: " + totalTimeI + " - AVG: " + totalTimeI/testCases);
+        System.out.println("SCORE: " + scoreI + " - AVG: " + scoreI/testCases);
+        System.out.println("Invalid ans: " + invalidI + " - AVG: " + invalidI/testCases);
+        System.out.println("Scheduled: " + scheduledI + " - AVG: " + scheduledI/testCases);
+        System.out.println("Taken: " + takenI + " - AVG: " + takenI/testCases);
 
-        // SAVE
-        saveProblem(p, ploc);
-        saveSolution(solA, sloc);
-        saveSolutionHuman(solA,p, shloc);
-        // LOAD
-        // final Problem p = readProblem("problem.txt");
-        // final Solution s = readSolution("solution.txt");
-        // System.err.println(p);
-        // System.err.println("---------------------------------------------------------------------");
-        // System.err.println(s);
     }
     // 0 means no course
     private final int[] rangeStudents;
