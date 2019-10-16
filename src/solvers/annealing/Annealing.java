@@ -108,24 +108,22 @@ public class Annealing implements Solver {
                         return schedule;
                 }
             }
-        } while (Evaluator.isValid(p, new Solution(schedule)));
+        } while (!Evaluator.isValid(p, new Solution(schedule)));
         return null;
     }
 
     private int[][] swap(int[][] schedule) {
         int[][] newSchedule = new int[schedule.length][];
-        do {
-            for (int i = 0; i < timeslots; i++) {
-                newSchedule[i] = Arrays.copyOf(schedule[i], schedule[i].length);
-            }
-            int randTimeslot1 = ThreadLocalRandom.current().nextInt(timeslots);
-            int randTimeslot2 = ThreadLocalRandom.current().nextInt(timeslots);
-            int randClassroom1 = ThreadLocalRandom.current().nextInt(classrooms);
-            int randClassroom2 = ThreadLocalRandom.current().nextInt(classrooms);
-            int aux = newSchedule[randTimeslot1][randClassroom1];
-            newSchedule[randTimeslot1][randClassroom1] = newSchedule[randTimeslot2][randClassroom2];
-            newSchedule[randTimeslot2][randClassroom2] = aux;
-        } while (Evaluator.isValid(p, new Solution(newSchedule)));
+        for (int i = 0; i < timeslots; i++) {
+            newSchedule[i] = Arrays.copyOf(schedule[i], schedule[i].length);
+        }
+        int randTimeslot1 = ThreadLocalRandom.current().nextInt(timeslots);
+        int randTimeslot2 = ThreadLocalRandom.current().nextInt(timeslots);
+        int randClassroom1 = ThreadLocalRandom.current().nextInt(classrooms);
+        int randClassroom2 = ThreadLocalRandom.current().nextInt(classrooms);
+        int aux = newSchedule[randTimeslot1][randClassroom1];
+        newSchedule[randTimeslot1][randClassroom1] = newSchedule[randTimeslot2][randClassroom2];
+        newSchedule[randTimeslot2][randClassroom2] = aux;
         return newSchedule;
     }
 }
