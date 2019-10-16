@@ -11,7 +11,7 @@ import generator.Solution;
 import solvers.Solver;
 import solvers.annealing.Annealing;
 import solvers.genetic.Genetic;
-import solvers.lp.ILP;
+//import solvers.lp.ILP;
 
 public class Main {
 
