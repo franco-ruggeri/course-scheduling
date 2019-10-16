@@ -9,7 +9,7 @@ public class Evaluator {
     final static Heuristics CHOSEN = Heuristics.MAXLECTURES;
 
     enum Heuristics {
-        OVERLAPPING, LESSTIMESLOTS, MAXLECTURES
+        OVERLAPPING, LESSTIMESLOTS, MAXLECTURES, FITNESS_FUNCTION
     }
     // OVERLAPPING: sum of lectures that students can attend.
     // LESSTIMESLOTS: example of potential heurisic modifier
@@ -121,27 +121,24 @@ public class Evaluator {
         int timeslots = p.getTimeslotsCount();
         int cl = p.getClassroomCount();
         int[][] schedule = s.getSolution();
-
         int courseCount = p.getCourseCount();
-        int[] lectures = new int[courseCount];
-
+        int[] lectures = new int[courseCount + 1];
         int[] courses = p.getCourses();
         for (int i = 0; i < timeslots; i++) {
-            for (int course = 1; course <= courseCount; course++) {
-                boolean ocurrance = false;
+            for (int course : courses) {
+                int ocurrance = 0;
                 for (int j = 0; j < cl; j++) {
                     if (course == schedule[i][j]) {
-                        if (ocurrance) {
-                            return false;
-                        }
-                        ocurrance = true;
-                        lectures[course-1]++;
+                        ocurrance++;
                     }
+                    lectures[schedule[i][j]]++;
                 }
+                if (ocurrance > 1)
+                    return false;
             }
         }
         for (int c = 1; c < courseCount; c++) {
-            if (courses[c] != lectures[c])
+            if (courses[c - 1] != lectures[c])
                 return false;
         }
         return true;

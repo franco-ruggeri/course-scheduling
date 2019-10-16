@@ -33,7 +33,7 @@ public class Main {
         
         // generate solvers
         List<Solver> solvers = new LinkedList<>();
-//        solvers.add(new Annealing(10000000, .01, problem));
+        solvers.add(new Annealing(10000000, .01, problem));
         solvers.add(new Genetic(problem, 100, 0.05, 1500, 60000));
 //        solvers.add(new ILP(problem));
         

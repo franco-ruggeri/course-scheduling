@@ -9,40 +9,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import solvers.annealing.Annealing;
-import solvers.genetic.Genetic;
-import solvers.hill.Hill;
-import solvers.lp.ILP;
-
 public class Generator {
-    public static Generator predefined() {
-        return new Generator(new int[] { 10, 15 }, // students
-                new int[] { 7, 8 }, // courses
-                new int[] { 4, 5 }, // days
-                new int[] { 4, 5 }, // hoursPerDay
-                new int[] { 5, 6 }, // classrooms
-                new int[] { 3, 5 }, // rangeStudentsCourseCount
-                new int[] { 7, 15 } // rangeCoursesLecturesCount
-        );
-    }
-
-    public static void main(String[] args) {
-        final Generator generator = Generator.predefined();
-
-        final Problem p = generator.generate();
-        final Annealing annealing = new Annealing(100000, .01, p);
-        final Solution solA = annealing.solve();
-
-        System.out.println("ANN: isvalid: " + Evaluator.isValid(p, solA));
-        System.out.println("ANN " + Evaluator.evaluate(p, solA));
-
-        final ILP ilp = new ILP(p);
-        final Solution solILP = ilp.solve();
-
-        System.out.println("ILP: isvalid: " + Evaluator.isValid(p, solILP));
-        System.out.println("ILP " + Evaluator.evaluate(p, solILP));
-        System.out.println(solILP.toString());
-    }
     // 0 means no course
     private final int[] rangeStudents;
     private final int[] rangeCourses;
