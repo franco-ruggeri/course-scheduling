@@ -4,13 +4,9 @@
 .classpath
 .project
 /bin/
-Problem.txt
-Annealing.csv
-Genetic.csv
-problem.txt
-solution.csv
+*.txt
+*.csv
 .classpath
 .problem
 .settings
 bin
-solution.txt
