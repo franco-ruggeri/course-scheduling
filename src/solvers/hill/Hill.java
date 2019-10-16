@@ -89,7 +89,7 @@ public class Hill {
             }
         }
         System.err.println("Total of lectures enrolled = " + total);
-        System.err.println("Lectures taken = " + Evaluator.lecturesTaken(p, new Solution(bestSchedule)));
+        System.err.println("Lectures taken = " + Evaluator.countTakenLectures(p, new Solution(bestSchedule)));
         return new Solution(bestSchedule);
     }
 

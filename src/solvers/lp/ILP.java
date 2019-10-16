@@ -2,72 +2,103 @@ package solvers.lp;
 
 import generator.Problem;
 import generator.Solution;
-import scpsolver.constraints.LinearBiggerThanEqualsConstraint;
-import scpsolver.constraints.LinearSmallerThanEqualsConstraint;
-import scpsolver.lpsolver.LinearProgramSolver;
-import scpsolver.lpsolver.SolverFactory;
 import scpsolver.problems.LPSolution;
 import scpsolver.problems.LPWizard;
-import scpsolver.problems.LinearProgram;
+import scpsolver.problems.LPWizardConstraint;
+import solvers.Solver;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-public class ILP {
+public class ILP implements Solver {
+    private final Problem p;
 
-    private final Problem problem;
-    private int[][] CoursesOfstudents;
-    private int[] lecturesNumOfCourses;
-    private final int timeslotsNum;
-    private final int classroomsNum;
-    private final int coursesNum;
-
-
-    public ILP(Problem problem) {
-        this.problem = problem;
-        this.CoursesOfstudents = problem.getStudents();
-        this.lecturesNumOfCourses = problem.getCourses();
-        this.coursesNum = problem.getCourseCount();
-        this.timeslotsNum = problem.getTimeslotsCount();
-        this.classroomsNum = problem.getClassroomCount();
+    public ILP(Problem p) {
+        this.p = p;
     }
 
-    public Solution solveIntegerLinearProgram() {
-        int[][] timeSchedule = new int[timeslotsNum][classroomsNum];
+    public Solution solve() {
+//        int[][] timeSchedule = new int[timeslotsNum][classroomsNum];
         LPWizard lpw = new LPWizard();
-        for (int indexOfStudent = 0; indexOfStudent < CoursesOfstudents.length; indexOfStudent++) {
-           lpw=  initForOneStudent(lpw);
+
+        final Map<List<Integer>, Integer> map = p.getGroupsCount();
+        final int timeSlots = p.getTimeslotsCount();
+        final int classRoomCount = p.getClassroomCount();
+        final int[] pCourses = p.getCourses();
+        final int courseCount = p.getCourseCount();
+        int sg = 0;
+
+        //StudentGroups:
+        for (Map.Entry<List<Integer>, Integer> entry : map.entrySet()) {
+            //Objective:
+            final int SGCount = entry.getValue();
+            final List<Integer> courses = entry.getKey();
+
+            for (int t = 0; t < timeSlots; t++) {
+                final String constraint = getC(sg, t);
+                lpw.plus(constraint, SGCount);
+                lpw.addConstraint("pos"+t+"sg"+sg, 0, "<=").plus(constraint);
+                lpw.setInteger(constraint);
+                final LPWizardConstraint currentConst = lpw.addConstraint("const#"+constraint, 1, ">=");//constraint for constraint
+                currentConst.plus(constraint, -1);
+                for (final int course: courses){
+                    final String courseName = getT(t, course);
+                    currentConst.plus(courseName, 1);
+                    lpw.setBoolean(courseName);
+                }
+            }
+            sg++;
         }
 
 
-        lpw.plus("x1", 5.0);
-        lpw.plus("x2", 10.0);
-        lpw.addConstraint("c1", 8, "<=").plus("x1", 3.0).plus("x2", 1.0);
-        lpw.addConstraint("c2", 4, "<=").plus("x2", 4.0);
-        lpw.addConstraint("c3", 2, ">=").plus("x1", 2.0);
+        //for every course, for every timeslot
+        for (int c = 0; c < courseCount; c++) {
+            final LPWizardConstraint courseConst = lpw.addConstraint("cCourse"+c, pCourses[c], "=");
+            for (int t = 0; t < timeSlots; t++) {
+                courseConst.plus(getT(t, c));
+            }
+            courseConst.setAllVariablesBoolean();
+        }
+
+        for (int t = 0; t < timeSlots; t++) {
+            final LPWizardConstraint classRoomConst = lpw.addConstraint("crC"+t, classRoomCount, ">=");
+            for (int c = 0; c < courseCount; c++) {
+                classRoomConst.plus(getT(t,c));
+            }
+            classRoomConst.setAllVariablesBoolean();
+        }
+
         lpw.setMinProblem(true);
         //lpw.setAllVariablesInteger();
         LPSolution solution = lpw.solve();
+//        System.out.println(lpw.getLP().convertToCPLEX());
+//        System.out.println("solution");
+//        System.out.println(solution);
+//        System.out.println(solution.getBoolean(getT(0, 0)));
 
-        System.out.println(solution);
+        //solution to Solution
+        int[][] sol = new int[timeSlots][classRoomCount];
+        for (int t = 0; t < timeSlots; t++) {
+            int currentClassRoom = 0;
+            for (int c = 0; c < courseCount; c++) {
+                if (solution.getBoolean(getT(t, c))){
+                    sol[t][currentClassRoom] = c + 1;
+                    currentClassRoom++;
+                }
+            }
+        }
+
         //System.out.println(solution.getBoolean("x1"));
         //
         // long value = solution.getInteger(solutionInteger);
 
-        return null;
+        return new Solution(sol);
     }
 
-    public LPWizard initForOneStudent(LPWizard lpw){
-
-        return null;
+    private String getT(final int time, final int course){
+        return time + "t" + course;
     }
-
-    public static void main(String args[]) {
-
-        // ILP.solveIntegerLinearProgram();
-
+    private String getC(final int i, final int j){
+        return i + "c" + j;
     }
-
 }

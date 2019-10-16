@@ -1,5 +1,9 @@
 package solvers;
 
-public class Solver {
+import generator.Solution;
 
+public interface Solver {
+	
+	Solution solve();
+	
 }
