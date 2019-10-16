@@ -1,6 +1,8 @@
 package solvers.genetic;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import generator.Problem;
@@ -96,14 +98,28 @@ public class Chromosome {
     		.forEach(c -> lectureCount[c-1]++);
     	
     	// init fitness value so that it is never negative
-    	fitnessValue = 10*Arrays.stream(desiredLectureCount).sum();
+    	fitnessValue = 100*Arrays.stream(desiredLectureCount).sum();
     	
     	// number of lectures different from the desired one -> penalty
     	for (int c=0; c<courseCount; c++)
     		fitnessValue -= 50 * Math.abs(desiredLectureCount[c] - lectureCount[c]);
     	
     	// overlaps -> penalty
-    	// TODO
+    	Map<List<Integer>, Integer> groupsCount = problem.getGroupsCount();
+    	for (int[] timeslot : schedule) {
+            for (List<Integer> group : problem.getGroups()) {
+                int overlaps = 0;
+                for (int course : timeslot) {
+                    if (group.contains(course)) {
+                        overlaps++;
+                    }
+                }
+                if (overlaps > 1) {
+                    fitnessValue -= (overlaps - 1) * groupsCount.get(group);
+                }
+            }
+        }
+    	
     	
     	return fitnessValue > 0.0 ? fitnessValue : 0.0;
     }
