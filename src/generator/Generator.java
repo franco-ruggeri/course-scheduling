@@ -33,12 +33,12 @@ public class Generator {
 
         final Problem problem = generator.generate();
         //Annealing
-        // final Annealing solver = new Annealing(100000, .01, problem);
-        // final Solution solution = solver.simulate();
+        final Annealing solver = new Annealing(100000, .01, problem);
+        final Solution solution = solver.simulate();
         // Hill
-        final Hill solver = new Hill(1000, problem);
-        final Solution solution = solver.solve();
-//
+//         final Hill solver = new Hill(1000, problem);
+//         final Solution solution = solver.solve();
+// //
 //        final Problem problem = generator.generate();
 //        final Genetic solver = new Genetic(problem, 100, 0.01, 10, 10000000);
 //        final Solution solution = solver.simulate();

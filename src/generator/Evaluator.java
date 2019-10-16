@@ -64,7 +64,7 @@ public class Evaluator {
                 }
                 // if there are no overlaps we add the number of student in the group to the
                 // final result
-                if (overlaps == 1) {
+                if (overlaps >= 1) {
                     sum += groupsCount.get(group);
                 }
             }
@@ -76,8 +76,8 @@ public class Evaluator {
                 total += groupsCount.get(group) * coursesCount[courseCode - 1];
             }
         }
-        double optimal = Math.pow(((double) sum / (double) total),2);
-        return (int) ((optimal>.1)?sum * optimal:sum);
+        double optimal = Math.pow(((double) sum / (double) total), 2);
+        return (int) ((optimal > .1) ? sum * optimal : sum);
     }
 
     static int minOverlaps(final Problem p, final Solution s) {
@@ -115,40 +115,30 @@ public class Evaluator {
                 total += groupsCount.get(group) * coursesCount[courseCode - 1];
             }
         }
-        double optimal = Math.pow(((double) sum / (double) total),2);
+        double optimal = Math.pow(((double) sum / (double) total), 2);
         return (int) (sum * optimal);
     }
 
     public static boolean isValid(final Problem p, final Solution s) {
-        int day = p.getDays();
-        int hpd = p.getHoursPerDay();
+        int timeslots = p.getTimeslotsCount();
         int cl = p.getClassroomCount();
         int[][] schedule = s.getSolution();
         int courseCount = p.getCourseCount();
         int[] lectures = new int[courseCount + 1];
         int[] courses = p.getCourses();
         Set<List<Integer>> groups = p.getGroups();
-        for (int d = 0; d < day; d++) {
-            int ocurrance = 0;
-            for (List<Integer> group : groups) {
-                for (int h = 0; h < hpd; h++) {
-                    int i = h * (d + 1);
-                    for (int j = 0; j < cl; j++) {
-                        if (group.contains(schedule[i][j])) {
-                            ocurrance++;
-                        }
-                        lectures[schedule[i][j]]++;
-                        if (ocurrance > 1)
-                            break;
+        for (int i = 0; i < timeslots; i++) {
+            for (int course : courses) {
+                int ocurrance = 0;
+                for (int j = 0; j < cl; j++) {
+                    if (course == schedule[i][j]) {
+                        ocurrance++;
                     }
-                    if (ocurrance > 1)
-                        break;
                 }
+                lectures[schedule[i][j]]++;
                 if (ocurrance > 1)
-                    break;
+                    return false;
             }
-            if (ocurrance > 1)
-                return false;
         }
         for (int c = 1; c < courseCount; c++) {
             if (courses[c - 1] != lectures[c])
@@ -178,7 +168,7 @@ public class Evaluator {
                 }
                 // if there are no overlaps we add the number of student in the group to the
                 // final result
-                if (overlaps == 1) {
+                if (overlaps >= 1) {
                     sum += groupsCount.get(group);
                 }
             }
