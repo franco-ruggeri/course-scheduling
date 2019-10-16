@@ -4,9 +4,15 @@
 .classpath
 .project
 /bin/
+<<<<<<< HEAD
+Problem.txt
+Annealing.csv
+Genetic.csv
+=======
 problem.txt
 solution.csv
 .classpath
 .problem
 .settings
 bin
+>>>>>>> master

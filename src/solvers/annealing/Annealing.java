@@ -3,18 +3,18 @@ package solvers.annealing;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import generator.Evaluator;
 import generator.Problem;
 import generator.Solution;
+import solvers.Solver;
 
 /**
  * Annealing
  */
-public class Annealing {
+public class Annealing implements Solver {
 
     private int temperature;
     private double coolingRate;
@@ -34,7 +34,7 @@ public class Annealing {
         this.classrooms = p.getClassroomCount();
     }
 
-    public Solution simulate() {
+    public Solution solve() {
         int[][] schedule = new int[timeslots][classrooms];
         int[][] newSchedule = new int[timeslots][classrooms];
         int[][] bestSchedule = new int[timeslots][classrooms];
@@ -52,9 +52,6 @@ public class Annealing {
             }
             swap(newSchedule);
             newCost = Evaluator.evaluate(p, new Solution(newSchedule));
-            // System.err.println("Cost = "+cost);
-            // System.err.println("New Cost = "+newCost);
-            // System.err.println("Best Cost = "+bestCost);
             if (newCost > cost) {
                 for (int i = 0; i < timeslots; i++) {
                     schedule[i] = Arrays.copyOf(newSchedule[i], newSchedule[i].length);
@@ -77,29 +74,7 @@ public class Annealing {
                 }
             }
             temperature *= 1 - coolingRate;
-            // System.err.println("temperature = "+ temperature);
         }
-        // for (int[] timeslot : schedule) {
-        // for (int lecture : timeslot) {
-        // System.out.print(lecture + "\t");
-        // }
-        // System.out.println();
-        // }
-        int total = 0;
-        Map<List<Integer>, Integer> groups = p.getGroupsCount();
-        // int sum = 0;
-        // for (int value : groups.values()) {
-        // sum+= value;
-        // }a
-        // System.err.println(sum);
-        // System.err.println(p.getStudentCount());
-        for (List<Integer> group : p.getGroups()) {
-            for (int courseCode : group) {
-                total += groups.get(group) * coursesCount[courseCode - 1];
-            }
-        }
-        System.err.println("Total of lectures enrolled = " + total);
-        System.err.println("Lectures taken = " + Evaluator.lecturesTaken(p, new Solution(bestSchedule)));
         return new Solution(bestSchedule);
     }
 

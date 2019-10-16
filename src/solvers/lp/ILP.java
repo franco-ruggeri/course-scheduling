@@ -1,33 +1,16 @@
 package solvers.lp;
 
-import generator.Evaluator;
-import generator.Generator;
 import generator.Problem;
 import generator.Solution;
 import scpsolver.problems.LPSolution;
 import scpsolver.problems.LPWizard;
 import scpsolver.problems.LPWizardConstraint;
+import solvers.Solver;
 
 import java.util.List;
 import java.util.Map;
 
-public class ILP {
-    public static void main(String args[]) {
-        final Generator gen = Generator.predefined();
-        final Problem p = gen.generate();
-        System.out.println(p.toString());
-        System.out.println(p.getGroupsCount());
-
-        final ILP ilp = new ILP(p);
-        final Solution s = ilp.solve();
-        System.out.println("ISVALID:: ");
-        System.out.println(Evaluator.isValid(p, s));
-        System.out.println("EVALUATION:: ");
-        System.out.println(Evaluator.evaluate(p, s));
-        System.out.println(s.toString());
-        System.out.println(p.getDays());
-    }
-
+public class ILP implements Solver {
     private final Problem p;
 
     public ILP(Problem p) {
