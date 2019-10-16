@@ -8,41 +8,39 @@ import generator.Problem;
 import generator.Solution;
 
 /**
- * Implementation of a genetic algorithm (GA) following the pseudo-code in
- * chapter 4 of "Artificial Intelligence, a modern approach - Russell, Norvig".
+ * Implementation of a genetic algorithm (GA)
  */
 public class Genetic {
     private final int populationSize;
-    private List<Individual> population;
+    private List<Chromosome> population;
     private double mutationProbability;
-    private final int enoughFitness;
+    private final double enoughFitness;
     private final long maxTime;
-    private Random random;
+    private static final Random random = new Random();
     
-	public Genetic(Problem problem, int populationSize, double mutationProbability, int enoughFitness, long maxTime) {
+	public Genetic(Problem problem, int populationSize, double mutationProbability, double enoughFitness, long maxTime) {
         this.populationSize = populationSize;
         this.mutationProbability = mutationProbability;
         this.enoughFitness = enoughFitness;
         this.maxTime = maxTime;
-        this.random = new Random();
         
         // init population with random states (complete representation, all slots filled)
         population = new LinkedList<>();
-        for (int i=0; i<populationSize; i++)
-			population.add(new Individual(problem));
+        for (int c=0; c<populationSize; c++)
+			population.add(new Chromosome(problem));
         normalizeFitnessValues();
     }
 
 	public Solution simulate() {
-		Individual bestIndividual = null;
-		int maxFitnessValue;
+		Chromosome bestIndividual = null;
+		double maxFitnessValue;
 		long startTime = System.currentTimeMillis();
 		
     	do {
     		// evolution
-	    	List<Individual> newPopulation = new LinkedList<>();
+	    	List<Chromosome> newPopulation = new LinkedList<>();
 	    	for (int i=0; i<populationSize; i++) {
-	    		Individual child = reproduce(select(), select());
+	    		Chromosome offspring = reproduce(select(), select());
 	    		
 				/*
 				 * Mutation should happen with a certain probability. In order to obtain this,
@@ -50,63 +48,60 @@ public class Genetic {
 				 * random variable X~U(0,1), F(x) = P(X<=x) = x.
 				 */
 	    		if (random.nextDouble() <= mutationProbability)
-	    			child.mutate();
-	    		newPopulation.add(child);
+	    			offspring.mutate();
+	    		newPopulation.add(offspring);
 	    	}
 	    	
 	    	// update population
 	    	population = newPopulation;
 	    	normalizeFitnessValues();
 	    	
-	    	System.err.println("Evolution completed");
-	    	
 			// get best individual
-			int aux = population.stream().mapToInt(Individual::getFitnessValue).max().getAsInt();
+			double aux = population.stream().mapToDouble(Chromosome::getFitnessValue).max().getAsDouble();
 	    	bestIndividual = population.stream().filter(i -> i.getFitnessValue() == aux).findFirst().get();
 	    	maxFitnessValue = aux;	// aux is used because closures require effective final variables
 	    	
 	    	// terminate when time runs out or when a good-enough individual has been found
-	    	System.err.println("Remaining time: " + (maxTime - System.currentTimeMillis() + startTime));
+//	    	System.err.println("Remaining time: " + (maxTime - System.currentTimeMillis() + startTime));
 		} while (System.currentTimeMillis() - startTime < maxTime && maxFitnessValue < enoughFitness);
     	
 	    return bestIndividual.getSolution();
     }
 
-	private Individual select() {
+	private Chromosome select() {
 		/*
 		 * Fitness proportionate selection (roulette-wheel selection):
 		 * 1. sum all fitness values -> sum
-		 * 2. generate random value in (0, s) -> rand
+		 * 2. generate random value in (0, sum) -> rand
 		 * 3. go through the population summing the fitness values -> partialSum
-		 * 4. stop when partialSum > rand 
-		 *  is greater than r
+		 * 4. stop when partialSum > rand is greater than r
+		 * 
+		 * Because of the normalization, sum is always 1, so step 1 is not necessary.
 		 */
-		int sum = population.stream().mapToInt(Individual::getFitnessValue).sum();
-		int rand = random.nextInt(sum);
-		int partialSum = 0;
-		for (Individual i : population) {
-			partialSum += i.getFitnessValue();
+		double rand = random.nextDouble();
+		double partialSum = 0;
+		for (Chromosome c : population) {
+			partialSum += c.getFitnessValue();
 			if (partialSum > rand)
-				return i;
+				return c;
 		}
 		
 		// should not arrive here
 		throw new RuntimeException("Wrong selection algorithm");
 	}
 	
-	private Individual reproduce(Individual x, Individual y) {
-		return new Individual(x, y);
+	private Chromosome reproduce(Chromosome x, Chromosome y) {
+		return new Chromosome(x, y);
 	}
 	
 	private void normalizeFitnessValues() {
-		population.stream().mapToInt(Individual::getFitnessValue).forEach(fv -> System.err.print(fv + " "));
+		System.err.print("Fitness values: ");
+		population.stream().mapToDouble(Chromosome::getFitnessValue).forEach(fv -> System.err.print(fv + " "));
 		System.err.println();
-		
-		double sum = population.stream().mapToInt(Individual::getFitnessValue).sum();
-		population.forEach(i -> i.setFitnessValue((int) (i.getFitnessValue() / sum * 100)));
-		
-		population.stream().mapToInt(Individual::getFitnessValue).forEach(fv -> System.err.print(fv + " "));
-		System.err.println();
+		double sum = population.stream().mapToDouble(Chromosome::getFitnessValue).sum();
+		System.err.println("Sum: " + sum);
+		population.forEach(c -> c.setFitnessValue(c.getFitnessValue() / sum));
+		System.err.println("Sum: " + population.stream().mapToDouble(Chromosome::getFitnessValue).sum());
 	}
 	
 }

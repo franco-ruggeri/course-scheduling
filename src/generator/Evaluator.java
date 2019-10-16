@@ -10,7 +10,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import solvers.genetic.Individual;
+import solvers.genetic.Chromosome;
 
 public class Evaluator {
     final static Heuristics CHOSEN = Heuristics.MAXLECTURES;

@@ -32,7 +32,7 @@ public class Generator {
         
         final Problem problem = generator.generate();
 //        System.err.println(problem);
-        final Genetic solver = new Genetic(problem, 100, 0.05, 500, 60000);
+        final Genetic solver = new Genetic(problem, 100, 0.2, 500, 60000);
         final Solution solution = solver.simulate();
         
 //        System.err.println(solution);

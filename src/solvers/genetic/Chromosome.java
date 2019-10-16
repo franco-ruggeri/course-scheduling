@@ -3,39 +3,25 @@ package solvers.genetic;
 import java.util.Arrays;
 import java.util.Random;
 
-import generator.Evaluator;
 import generator.Problem;
 import generator.Solution;
 
 /**
- * Represents an individual of the population for GA.
+ * Represents a chromosome of the population for GA.
  */
-public class Individual {
+public class Chromosome {
 	private String genes;
-	private int fitnessValue;
+	private double fitnessValue;
 	private Problem problem;
 	private Solution solution;
-	private Random random = new Random();
+	private static final Random random = new Random();
 	
 	/**
-	 * Constructs an individual with genes equivalent to the solution.
-	 * 
-	 * @param problem
-	 * @param solution
-	 */
-	public Individual(Problem problem, Solution solution) {
-		this.genes = toGenes(problem, solution);
-		this.fitnessValue = fitnessFunction(problem, solution);
-		this.problem = problem;
-		this.solution = solution;
-	}
-	
-	/**
-	 * Constructs an individual with random (but valid) genes.
+	 * Constructs an chromosome with random (but valid) genes.
 	 * 
 	 * @param problem
 	 */
-	public Individual(Problem problem) {
+	public Chromosome(Problem problem) {
 		int timeslotCount = problem.getTimeslotsCount();
         int classroomCount = problem.getClassroomCount();
         int courseCount = problem.getCourseCount();
@@ -65,62 +51,98 @@ public class Individual {
         
         this.problem = problem;
         this.solution = new Solution(schedule);
-        this.genes = toGenes(problem, solution);
-		this.fitnessValue = fitnessFunction(problem, solution);
+        this.genes = toGenes();
+        this.genes = repair(this.problem, this.solution);
+        this.refresh();
 	}
 	
 	/**
-	 * Constructs an individual as child of two individuals.
+	 * Constructs an chromosome as offspring of two chromosomes.
 	 * 
 	 * @param x
 	 * @param y
 	 */
-	public Individual(Individual x, Individual y) {
-		int n = x.genes.length();
-		int c = random.nextInt(n);	// random crossover point
+	public Chromosome(Chromosome x, Chromosome y) {
 		this.problem = x.problem;
-		this.genes = x.genes.substring(0, c) + y.genes.substring(c, n);
-		this.solution = toSolution(this.problem, this.genes);
-		this.fitnessValue = fitnessFunction(this.problem, this.solution);
+		this.genes = crossover(x, y);
+		this.solution = toSolution();
+		this.genes = repair(this.problem, this.solution);
+		this.refresh();
 	}
 	
 	/**
-	 * Mutates one gene of the individual.
+	 * Mutates one gene of the chromosome.
 	 */
 	public void mutate() {
 		int n = genes.length();
 		int m = random.nextInt(n);						// index of mutating gene
 		char g = genes.charAt(m) == '0' ? '1' : '0';	// mutated gene
 		this.genes = genes.substring(0, m) + g + genes.substring(m+1, n);
-		solution = toSolution(problem, genes); 
+		this.solution = toSolution();
+		this.genes = repair(this.problem, this.solution);
+		this.refresh();
 	}
 	
-	public String getGenes() {
-		return genes;
-	}
-	
-	public int getFitnessValue() {
-		return fitnessValue;
-	}
+	private double fitness() {
+    	double fitnessValue;
+    	int[][] schedule = solution.getSolution();
+    	int courseCount = problem.getCourseCount();
+    	int[] desiredLectureCount = problem.getCourses();
+    	int[] lectureCount = new int[courseCount];
 
-	public void setFitnessValue(int fitnessValue) {
-		this.fitnessValue = fitnessValue;
+    	// count lectures
+    	Arrays.stream(schedule)
+    		.flatMapToInt(t -> Arrays.stream(t))
+    		.filter(c -> c > 0)
+    		.forEach(c -> lectureCount[c-1]++);
+    	
+    	// init fitness value so that it is never negative
+    	fitnessValue = 100*Arrays.stream(desiredLectureCount).sum();
+    	
+    	// number of lectures different from the desired one -> penalty
+    	for (int c=0; c<courseCount; c++)
+    		fitnessValue -= Math.abs(desiredLectureCount[c] - 100*lectureCount[c]);
+    	
+    	// overlaps -> penalty
+    	// TODO
+    	
+    	return fitnessValue;
+    }
+	
+	private String crossover(Chromosome x, Chromosome y) {
+		int n = x.genes.length();
+		int c = random.nextInt(n);	// random crossover point
+		return x.genes.substring(0, c) + y.genes.substring(c, n);
 	}
 	
-	public Solution getSolution() {
-		return solution;
+	private String repair(Problem problem, Solution solution) {
+		int timeslotCount = problem.getTimeslotsCount();
+        int classroomCount = problem.getClassroomCount();
+		int[][] schedule = solution.getSolution();
+		boolean[] lectureInTimeslot = new boolean[problem.getCourseCount()];
+		
+		for (int t=0; t<timeslotCount; t++) {
+			for (int cl=0; cl<classroomCount; cl++) {
+				// cancel if there is already one in this timeslot for this course
+				if (schedule[t][cl] > 0) {
+					if (lectureInTimeslot[schedule[t][cl] - 1])
+						schedule[t][cl] = 0;
+					else
+						lectureInTimeslot[schedule[t][cl] - 1] = true;
+				}
+			}
+			Arrays.fill(lectureInTimeslot, false);
+		}
+		
+		this.solution = new Solution(schedule);
+		return this.toGenes();
 	}
 	
-	/**
-	 * Converts the individual to a solution.
-	 * 
-	 * @return
-	 */
-	private static Solution toSolution(Problem problem, String genes) {
+	private Solution toSolution() {
 		int timeslotCount = problem.getTimeslotsCount();
         int classroomCount = problem.getClassroomCount();
         int courseCount = problem.getCourseCount();
-        int genesPerCourse = genesPerCourse(problem);
+        int genesPerCourse = genesPerCourse();
         int[][] schedule = new int[timeslotCount][classroomCount];
         
         for (int t=0; t<timeslotCount; t++) {
@@ -141,16 +163,10 @@ public class Individual {
         return new Solution(schedule);
 	}
 	
-	/**
-	 * Converts a solution to genes represented as string of 0s and 1s.
-	 * The string has #Timeslots x #Classrooms x log2(#Courses) genes.
-	 * 
-	 * @param solution
-	 */
-	private static String toGenes(Problem problem, Solution solution) {
+	private String toGenes() {
         int timeslotCount = problem.getTimeslotsCount();
         int classroomCount = problem.getClassroomCount();
-        int genesPerCourse = genesPerCourse(problem);
+        int genesPerCourse = genesPerCourse();
         int[][] schedule = solution.getSolution();
         StringBuffer sb = new StringBuffer();
         
@@ -178,13 +194,7 @@ public class Individual {
 		return sb.toString();
 	}
 	
-	/**
-	 * Computes the minimum number of genes necessary to represent a course.
-	 * 
-	 * @param problem
-	 * @return
-	 */
-	private static int genesPerCourse(Problem problem) {
+	private int genesPerCourse() {
 		int courseCount = problem.getCourseCount();
 		int genesPerCourse;
 		
@@ -197,48 +207,25 @@ public class Individual {
         return genesPerCourse;
 	}
 	
-	/**
-	 * Computes the fitness value of the individual corresponding to the solution.
-	 * 
-	 * @param problem
-	 * @param solution
-	 * @return
-	 */
-	private static int fitnessFunction(Problem problem, Solution solution) {
-    	int fitnessValue;
-    	int[][] schedule = solution.getSolution();
-    	int courseCount = problem.getCourseCount();
-    	int[] desiredLectureCount = problem.getCourses();
-    	int[] lectureCount = new int[courseCount];
-    	
-    	// init such that it cannot be negative (necessary for genetic selection
-    	fitnessValue = (int) (Math.pow(Arrays.stream(desiredLectureCount).sum(), 2) +
-    			Math.pow(problem.getClassroomCount() * problem.getTimeslotsCount(), 2));
-    	
-    	// count lectures in timeslot and in total
-    	for (int t=0; t<schedule.length; t++) {
-    		int[] lectureInTimeslotCount = new int[courseCount];
-    		for (int cl=0; cl<schedule[t].length; cl++)
-    			if (schedule[t][cl] > 0) {	// 0 means no course
-    				lectureInTimeslotCount[schedule[t][cl] - 1]++;
-    				lectureCount[schedule[t][cl] - 1]++;
-    			}
-    		
-    		// lectures of the same course in the same timeslot -> penalty
-    		fitnessValue -= Arrays.stream(lectureCount).filter(c -> c > 1).map(c -> c*c).sum();
-    		Arrays.fill(lectureInTimeslotCount, 0);
-    	}
-    	
-    	// number of lectures different from the desired one -> penalty
-    	for (int c=0; c<courseCount; c++)
-    		fitnessValue -= Math.pow(desiredLectureCount[c] - lectureCount[c], 2);
-    	
-    	// overlaps -> penalty
-    	// TODO
-    	
-//    	System.err.println(fitnessValue);
-    	
-    	return fitnessValue;
-    }
+	private void refresh() {
+		this.solution = toSolution();
+		this.fitnessValue = fitness();
+	}
+	
+	public String getGenes() {
+		return genes;
+	}
+	
+	public double getFitnessValue() {
+		return fitnessValue;
+	}
+
+	public void setFitnessValue(double fitnessValue) {
+		this.fitnessValue = fitnessValue;
+	}
+	
+	public Solution getSolution() {
+		return solution;
+	}
 	
 }
