@@ -126,7 +126,6 @@ public class Evaluator {
         int courseCount = p.getCourseCount();
         int[] lectures = new int[courseCount + 1];
         int[] courses = p.getCourses();
-        Set<List<Integer>> groups = p.getGroups();
         for (int i = 0; i < timeslots; i++) {
             for (int course : courses) {
                 int ocurrance = 0;
@@ -134,8 +133,8 @@ public class Evaluator {
                     if (course == schedule[i][j]) {
                         ocurrance++;
                     }
+                    lectures[schedule[i][j]]++;
                 }
-                lectures[schedule[i][j]]++;
                 if (ocurrance > 1)
                     return false;
             }
