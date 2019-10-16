@@ -57,7 +57,7 @@ public class Chromosome {
 	}
 	
 	/**
-	 * Constructs an chromosome as offspring of two chromosomes.
+	 * Constructs a chromosome as offspring of two chromosomes.
 	 * 
 	 * @param x
 	 * @param y
@@ -66,7 +66,6 @@ public class Chromosome {
 		this.problem = x.problem;
 		this.genes = crossover(x, y);
 		this.solution = toSolution();
-		this.genes = repair(this.problem, this.solution);
 		this.refresh();
 	}
 	
@@ -97,34 +96,56 @@ public class Chromosome {
     		.forEach(c -> lectureCount[c-1]++);
     	
     	// init fitness value so that it is never negative
-    	fitnessValue = 100*Arrays.stream(desiredLectureCount).sum();
+    	fitnessValue = 10*Arrays.stream(desiredLectureCount).sum();
     	
     	// number of lectures different from the desired one -> penalty
     	for (int c=0; c<courseCount; c++)
-    		fitnessValue -= Math.abs(desiredLectureCount[c] - 100*lectureCount[c]);
+    		fitnessValue -= 50 * Math.abs(desiredLectureCount[c] - lectureCount[c]);
     	
     	// overlaps -> penalty
     	// TODO
     	
-    	return fitnessValue;
+    	return fitnessValue > 0.0 ? fitnessValue : 0.0;
     }
 	
 	private String crossover(Chromosome x, Chromosome y) {
 		int n = x.genes.length();
-		int c = random.nextInt(n);	// random crossover point
-		return x.genes.substring(0, c) + y.genes.substring(c, n);
+		int genesPerTimeslot = problem.getClassroomCount() * genesPerCourse();
+		int crossoverPoint;
+		
+		/*
+		 * Random crossover point with the constraint of separating whole time slots.
+		 * This way, the offspring is valid, i.e. it does not have 2 lectures of the
+		 * same course in the same time slot.
+		 */
+		crossoverPoint = random.nextInt(n);
+		crossoverPoint = (crossoverPoint / genesPerTimeslot) * genesPerTimeslot;
+		
+		 // first part from one parent and the second part from the other
+		return x.genes.substring(0, crossoverPoint) + y.genes.substring(crossoverPoint, n);
 	}
 	
+	/**
+	 * Repairs the chromosome after the mutation, in order to make it valid.
+	 * 
+	 * @param problem
+	 * @param solution
+	 * @return
+	 */
 	private String repair(Problem problem, Solution solution) {
 		int timeslotCount = problem.getTimeslotsCount();
         int classroomCount = problem.getClassroomCount();
+        int courseCount = problem.getCourseCount();
 		int[][] schedule = solution.getSolution();
 		boolean[] lectureInTimeslot = new boolean[problem.getCourseCount()];
 		
 		for (int t=0; t<timeslotCount; t++) {
 			for (int cl=0; cl<classroomCount; cl++) {
-				// cancel if there is already one in this timeslot for this course
-				if (schedule[t][cl] > 0) {
+				// mutation can cause an invalid course ID
+				if (schedule[t][cl] > courseCount) {
+					schedule[t][cl] = 0;
+				} else if (schedule[t][cl] > 0) {
+					// cancel if there is already one in this time slot for this course
 					if (lectureInTimeslot[schedule[t][cl] - 1])
 						schedule[t][cl] = 0;
 					else
@@ -141,7 +162,6 @@ public class Chromosome {
 	private Solution toSolution() {
 		int timeslotCount = problem.getTimeslotsCount();
         int classroomCount = problem.getClassroomCount();
-        int courseCount = problem.getCourseCount();
         int genesPerCourse = genesPerCourse();
         int[][] schedule = new int[timeslotCount][classroomCount];
         
@@ -154,9 +174,7 @@ public class Chromosome {
         		for (int g=0; g<genesPerCourse; g++)
         			course = course*2 + (genes.charAt(baseIndex + g) == '0' ? 0 : 1);
         		
-        		// pay attention, the mutation could have generate an invalid course ID
-        		schedule[t][cl] = (course <= courseCount ? course : 0);
-        			
+        		schedule[t][cl] = course;
         	}
         }
         

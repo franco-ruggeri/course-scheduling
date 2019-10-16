@@ -29,18 +29,17 @@ public class Genetic implements Solver {
         population = new LinkedList<>();
         for (int c=0; c<populationSize; c++)
 			population.add(new Chromosome(problem));
-        normalizeFitnessValues();
     }
 
 	public Solution solve() {
-		Chromosome bestIndividual = null;
+		Chromosome bestChromosome = null;
 		double maxFitnessValue;
 		long startTime = System.currentTimeMillis();
 		long remainingTime;
 		
     	do {
     		// evolution
-	    	List<Chromosome> newPopulation = new LinkedList<>();
+    		List<Chromosome> newPopulation = new LinkedList<>();
 	    	for (int i=0; i<populationSize; i++) {
 	    		Chromosome offspring = reproduce(select(), select());
 	    		
@@ -56,18 +55,19 @@ public class Genetic implements Solver {
 	    	
 	    	// update population
 	    	population = newPopulation;
-	    	normalizeFitnessValues();
 	    	
 			// get best individual
 			double aux = population.stream().mapToDouble(Chromosome::getFitnessValue).max().getAsDouble();
-	    	bestIndividual = population.stream().filter(i -> i.getFitnessValue() == aux).findFirst().get();
+	    	bestChromosome = population.stream().filter(i -> i.getFitnessValue() == aux).findFirst().get();
 	    	maxFitnessValue = aux;	// aux is used because closures require effective final variables
 	    	
 	    	// terminate when time runs out or when a good-enough individual has been found
 	    	remainingTime = System.currentTimeMillis() - startTime;
+//	    	System.err.println("Remaining time: " + remainingTime);
+//	    	System.err.println("Best fitness value: " + maxFitnessValue);
 		} while (remainingTime < maxTime && maxFitnessValue < enoughFitness);
     	
-	    return bestIndividual.getSolution();
+	    return bestChromosome.getSolution();
     }
 
 	private Chromosome select() {
@@ -77,10 +77,9 @@ public class Genetic implements Solver {
 		 * 2. generate random value in (0, sum) -> rand
 		 * 3. go through the population summing the fitness values -> partialSum
 		 * 4. stop when partialSum > rand is greater than r
-		 * 
-		 * Because of the normalization, sum is always 1, so step 1 is not necessary.
 		 */
-		double rand = random.nextDouble();
+		double sum = population.stream().mapToDouble(Chromosome::getFitnessValue).sum();
+		double rand = random.nextDouble() * sum;
 		double partialSum = 0;
 		for (Chromosome c : population) {
 			partialSum += c.getFitnessValue();
@@ -94,11 +93,6 @@ public class Genetic implements Solver {
 	
 	private Chromosome reproduce(Chromosome x, Chromosome y) {
 		return new Chromosome(x, y);
-	}
-	
-	private void normalizeFitnessValues() {
-		double sum = population.stream().mapToDouble(Chromosome::getFitnessValue).sum();
-		population.forEach(c -> c.setFitnessValue(c.getFitnessValue() / sum));
 	}
 	
 }

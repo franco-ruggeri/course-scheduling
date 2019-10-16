@@ -9,7 +9,7 @@ public class Evaluator {
     final static Heuristics CHOSEN = Heuristics.MAXLECTURES;
 
     enum Heuristics {
-        OVERLAPPING, LESSTIMESLOTS, MAXLECTURES, FITNESS_FUNCTION
+        OVERLAPPING, LESSTIMESLOTS, MAXLECTURES
     }
     // OVERLAPPING: sum of lectures that students can attend.
     // LESSTIMESLOTS: example of potential heurisic modifier

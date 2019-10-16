@@ -17,7 +17,7 @@ public class Main {
 
     public static void main(String[] args) {
     	// generate problem
-    	System.err.println("Generating problem...");
+    	System.out.println("Generating problem...");
         Generator generator = new Generator(
         		new int[] { 100, 500 }, // students
         		new int[] { 10, 20 }, 	// courses
@@ -29,16 +29,16 @@ public class Main {
         );
         Problem problem = generator.generate();
         saveProblem(problem, "Problem.txt");
-        System.err.println("Problem generated and saved");
+        System.out.println("Problem generated and saved");
         
         // generate solvers
         List<Solver> solvers = new LinkedList<>();
-        solvers.add(new Annealing(10000000, .01, problem));
-        solvers.add(new Genetic(problem, 100, 0.2, 500, 60000));
-        solvers.add(new ILP(problem));
+//        solvers.add(new Annealing(10000000, .01, problem));
+        solvers.add(new Genetic(problem, 100, 0.05, 1500, 60000));
+//        solvers.add(new ILP(problem));
         
         // solve problem and evaluate performance
-        System.err.println("Solving and evaluating solutions...");
+        System.out.println("Solving and evaluating solutions...");
         solvers.forEach(s -> {
         	// solve
         	long start = System.currentTimeMillis();
@@ -47,14 +47,14 @@ public class Main {
         	saveSolution(solution, problem, s.getClass().getSimpleName() + ".csv");
         	
         	// evaluate
-        	System.err.println();
-        	System.err.println("Solver: " + s.getClass().getSimpleName());
-        	System.err.println("Time: " + ((end-start)/1000) + " seconds");
-        	System.err.println("Score: " + Evaluator.evaluate(problem, solution));
-        	System.err.println("Total desired lectures: " + Evaluator.countDesiredLectures(problem));
-			System.err.println("Total scheduled lectures: " + Evaluator.countScheduledLectures(problem, solution));
-			System.err.println("Total enrolled lectures: " + Evaluator.countEnrolledLectures(problem));
-	        System.err.println("Total taken lectures: " + Evaluator.countTakenLectures(problem, solution));
+        	System.out.println();
+        	System.out.println("Solver: " + s.getClass().getSimpleName());
+        	System.out.println("Time: " + ((end-start)/1000) + " seconds");
+        	System.out.println("Score: " + Evaluator.evaluate(problem, solution));
+        	System.out.println("Total desired lectures: " + Evaluator.countDesiredLectures(problem));
+			System.out.println("Total scheduled lectures: " + Evaluator.countScheduledLectures(problem, solution));
+			System.out.println("Total enrolled lectures: " + Evaluator.countEnrolledLectures(problem));
+	        System.out.println("Total taken lectures: " + Evaluator.countTakenLectures(problem, solution));
         });
     }
     
