@@ -6,18 +6,22 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import solvers.genetic.Individual;
 
 public class Evaluator {
     final static Heuristics CHOSEN = Heuristics.MAXLECTURES;
 
     enum Heuristics {
-        OVERLAPPING, LESSTIMESLOTS, MAXLECTURES
+        OVERLAPPING, LESSTIMESLOTS, MAXLECTURES, FITNESS_FUNCTION
     }
     // OVERLAPPING: sum of lectures that students can attend.
-    // LESSTIMESLOTS: exampele of potential heurisic modifier
+    // LESSTIMESLOTS: example of potential heurisic modifier
     // MAXLECTURES: total of lectures been taken
+    // GA: heuristic ad hoc for genetic algorithm
     // maximizing
 
     // returns what aiming to minimize; e.g. Overlapping would return one (0x1 <<
@@ -101,26 +105,11 @@ public class Evaluator {
         }
         return sum;
     }
-
+    
     static boolean isValid(final Problem p, final Solution s) {
         //A course has to have X amount of lectures in the solution where X is the amount of lecutures given by the problem.
         //course does not exist e.g. negative numbers
 
         return false;
-    }
-
-    public static void main(String[] args) {
-        int[][] students = new int[][] { { 1, 2, 3 }, { 2, 3, 1 }, { 4, 5, 6 }, { 1, 2, 3,4,5} };
-        Map<List<Integer>, Integer> groupsCount = new HashMap<List<Integer>, Integer>();
-        Set<List<Integer>> groups = new HashSet<List<Integer>>();
-
-        for (int[] group : students) {
-            List<Integer> key = Arrays.stream(group).boxed().collect(Collectors.toList());
-            groups.add(key);
-            groupsCount.put(key, groupsCount.getOrDefault(key, 0) + 1);
-        }
-        for (List<Integer> key : groups) {
-            System.out.println(key + ": " + groupsCount.get(key));
-        }
     }
 }

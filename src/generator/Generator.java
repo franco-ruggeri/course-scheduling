@@ -26,13 +26,14 @@ public class Generator {
                 new int[] { 7, 15 } // rangeCoursesLecturesCount
         );
 
-        final Problem problem = generator.generate();
-        final Annealing solver = new Annealing(10000000, .01, problem);
-        final Solution solution = solver.simulate();
-        
 //        final Problem problem = generator.generate();
-//        final Genetic solver = new Genetic(problem, 100, 0.01, 10, 10000000);
+//        final Annealing solver = new Annealing(10000000, .01, problem);
 //        final Solution solution = solver.simulate();
+        
+        final Problem problem = generator.generate();
+//        System.err.println(problem);
+        final Genetic solver = new Genetic(problem, 100, 0.05, 500, 60000);
+        final Solution solution = solver.simulate();
         
 //        System.err.println(solution);
         System.err.println("saving");
@@ -40,6 +41,10 @@ public class Generator {
 //        System.out.println("HELO WORLD");
         saveSolution(solution, problem, "solution.csv");
         System.err.println("finish");
+        System.err.println("Total lectures: " + Arrays.stream(problem.getCourses()).sum());
+		System.err.println("Scheduled lectures: "
+				+ Arrays.stream(solution.getSolution()).flatMapToInt(a -> Arrays.stream(a)).filter(c -> c > 0).count());
+		System.err.println("Evaluation: " + Evaluator.evaluate(problem, solution));
     }
 
     // 0 means no course

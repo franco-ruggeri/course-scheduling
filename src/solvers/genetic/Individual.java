@@ -10,7 +10,7 @@ import generator.Solution;
 /**
  * Represents an individual of the population for GA.
  */
-class Individual {
+public class Individual {
 	private String genes;
 	private int fitnessValue;
 	private Problem problem;
@@ -25,7 +25,7 @@ class Individual {
 	 */
 	public Individual(Problem problem, Solution solution) {
 		this.genes = toGenes(problem, solution);
-		this.fitnessValue = Evaluator.evaluate(problem, solution);
+		this.fitnessValue = fitnessFunction(problem, solution);
 		this.problem = problem;
 		this.solution = solution;
 	}
@@ -66,7 +66,7 @@ class Individual {
         this.problem = problem;
         this.solution = new Solution(schedule);
         this.genes = toGenes(problem, solution);
-		this.fitnessValue = Evaluator.evaluate(problem, solution);
+		this.fitnessValue = fitnessFunction(problem, solution);
 	}
 	
 	/**
@@ -79,20 +79,20 @@ class Individual {
 		int n = x.genes.length();
 		int c = random.nextInt(n);	// random crossover point
 		this.problem = x.problem;
-		this.genes = x.genes.substring(0, c) + y.genes.substring(c+1, n);
+		this.genes = x.genes.substring(0, c) + y.genes.substring(c, n);
 		this.solution = toSolution(this.problem, this.genes);
-		this.fitnessValue = Evaluator.evaluate(this.problem, this.solution);
+		this.fitnessValue = fitnessFunction(this.problem, this.solution);
 	}
-	
 	
 	/**
 	 * Mutates one gene of the individual.
 	 */
 	public void mutate() {
 		int n = genes.length();
-		int m = random.nextInt(n+1);					// index of mutating gene
+		int m = random.nextInt(n);						// index of mutating gene
 		char g = genes.charAt(m) == '0' ? '1' : '0';	// mutated gene
-		genes = genes.substring(0, m-1) + g + genes.substring(m+1, n);
+		this.genes = genes.substring(0, m) + g + genes.substring(m+1, n);
+		solution = toSolution(problem, genes); 
 	}
 	
 	public String getGenes() {
@@ -101,6 +101,10 @@ class Individual {
 	
 	public int getFitnessValue() {
 		return fitnessValue;
+	}
+
+	public void setFitnessValue(int fitnessValue) {
+		this.fitnessValue = fitnessValue;
 	}
 	
 	public Solution getSolution() {
@@ -115,19 +119,22 @@ class Individual {
 	private static Solution toSolution(Problem problem, String genes) {
 		int timeslotCount = problem.getTimeslotsCount();
         int classroomCount = problem.getClassroomCount();
+        int courseCount = problem.getCourseCount();
         int genesPerCourse = genesPerCourse(problem);
         int[][] schedule = new int[timeslotCount][classroomCount];
         
         for (int t=0; t<timeslotCount; t++) {
         	for (int cl=0; cl<classroomCount; cl++) {
         		int course = 0;
-        		int baseIndex = t * cl * genesPerCourse;
+        		int baseIndex = (t * classroomCount + cl) * genesPerCourse;
         		
         		// translate binary string to integer
-        		for (int g=genesPerCourse-1; g>=0; g--)
+        		for (int g=0; g<genesPerCourse; g++)
         			course = course*2 + (genes.charAt(baseIndex + g) == '0' ? 0 : 1);
         		
-        		schedule[t][cl] = course;
+        		// pay attention, the mutation could have generate an invalid course ID
+        		schedule[t][cl] = (course <= courseCount ? course : 0);
+        			
         	}
         }
         
@@ -140,7 +147,7 @@ class Individual {
 	 * 
 	 * @param solution
 	 */
-	static private String toGenes(Problem problem, Solution solution) {
+	private static String toGenes(Problem problem, Solution solution) {
         int timeslotCount = problem.getTimeslotsCount();
         int classroomCount = problem.getClassroomCount();
         int genesPerCourse = genesPerCourse(problem);
@@ -177,7 +184,7 @@ class Individual {
 	 * @param problem
 	 * @return
 	 */
-	static private int genesPerCourse(Problem problem) {
+	private static int genesPerCourse(Problem problem) {
 		int courseCount = problem.getCourseCount();
 		int genesPerCourse;
 		
@@ -185,9 +192,53 @@ class Individual {
         genesPerCourse = (int) (Math.log(courseCount+1) / Math.log(2));
         // if it had been truncated, we have to add 1
         // e.g. for courseCount=6 we need 3 bits, but log2(7) is truncated to 2
-        genesPerCourse = Math.pow(2, genesPerCourse) != courseCount ? genesPerCourse+1 : genesPerCourse;
+        genesPerCourse = Math.pow(2, genesPerCourse) != courseCount+1 ? genesPerCourse+1 : genesPerCourse;
         
         return genesPerCourse;
 	}
+	
+	/**
+	 * Computes the fitness value of the individual corresponding to the solution.
+	 * 
+	 * @param problem
+	 * @param solution
+	 * @return
+	 */
+	private static int fitnessFunction(Problem problem, Solution solution) {
+    	int fitnessValue;
+    	int[][] schedule = solution.getSolution();
+    	int courseCount = problem.getCourseCount();
+    	int[] desiredLectureCount = problem.getCourses();
+    	int[] lectureCount = new int[courseCount];
+    	
+    	// init such that it cannot be negative (necessary for genetic selection
+    	fitnessValue = (int) (Math.pow(Arrays.stream(desiredLectureCount).sum(), 2) +
+    			Math.pow(problem.getClassroomCount() * problem.getTimeslotsCount(), 2));
+    	
+    	// count lectures in timeslot and in total
+    	for (int t=0; t<schedule.length; t++) {
+    		int[] lectureInTimeslotCount = new int[courseCount];
+    		for (int cl=0; cl<schedule[t].length; cl++)
+    			if (schedule[t][cl] > 0) {	// 0 means no course
+    				lectureInTimeslotCount[schedule[t][cl] - 1]++;
+    				lectureCount[schedule[t][cl] - 1]++;
+    			}
+    		
+    		// lectures of the same course in the same timeslot -> penalty
+    		fitnessValue -= Arrays.stream(lectureCount).filter(c -> c > 1).map(c -> c*c).sum();
+    		Arrays.fill(lectureInTimeslotCount, 0);
+    	}
+    	
+    	// number of lectures different from the desired one -> penalty
+    	for (int c=0; c<courseCount; c++)
+    		fitnessValue -= Math.pow(desiredLectureCount[c] - lectureCount[c], 2);
+    	
+    	// overlaps -> penalty
+    	// TODO
+    	
+//    	System.err.println(fitnessValue);
+    	
+    	return fitnessValue;
+    }
 	
 }

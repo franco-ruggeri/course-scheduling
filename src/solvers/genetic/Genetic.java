@@ -30,13 +30,13 @@ public class Genetic {
         population = new LinkedList<>();
         for (int i=0; i<populationSize; i++)
 			population.add(new Individual(problem));
-//        population.stream().map(Individual::getSolution).forEach(System.err::println);
+        normalizeFitnessValues();
     }
 
 	public Solution simulate() {
 		Individual bestIndividual = null;
 		int maxFitnessValue;
-		double startTime = System.currentTimeMillis();
+		long startTime = System.currentTimeMillis();
 		
     	do {
     		// evolution
@@ -55,14 +55,18 @@ public class Genetic {
 	    	}
 	    	
 	    	// update population
-	    	population = new LinkedList<>(newPopulation);
-			
+	    	population = newPopulation;
+	    	normalizeFitnessValues();
+	    	
+	    	System.err.println("Evolution completed");
+	    	
 			// get best individual
 			int aux = population.stream().mapToInt(Individual::getFitnessValue).max().getAsInt();
 	    	bestIndividual = population.stream().filter(i -> i.getFitnessValue() == aux).findFirst().get();
 	    	maxFitnessValue = aux;	// aux is used because closures require effective final variables
 	    	
 	    	// terminate when time runs out or when a good-enough individual has been found
+	    	System.err.println("Remaining time: " + (maxTime - System.currentTimeMillis() + startTime));
 		} while (System.currentTimeMillis() - startTime < maxTime && maxFitnessValue < enoughFitness);
     	
 	    return bestIndividual.getSolution();
@@ -78,7 +82,7 @@ public class Genetic {
 		 *  is greater than r
 		 */
 		int sum = population.stream().mapToInt(Individual::getFitnessValue).sum();
-		int rand = random.nextInt(sum+1);
+		int rand = random.nextInt(sum);
 		int partialSum = 0;
 		for (Individual i : population) {
 			partialSum += i.getFitnessValue();
@@ -92,6 +96,17 @@ public class Genetic {
 	
 	private Individual reproduce(Individual x, Individual y) {
 		return new Individual(x, y);
+	}
+	
+	private void normalizeFitnessValues() {
+		population.stream().mapToInt(Individual::getFitnessValue).forEach(fv -> System.err.print(fv + " "));
+		System.err.println();
+		
+		double sum = population.stream().mapToInt(Individual::getFitnessValue).sum();
+		population.forEach(i -> i.setFitnessValue((int) (i.getFitnessValue() / sum * 100)));
+		
+		population.stream().mapToInt(Individual::getFitnessValue).forEach(fv -> System.err.print(fv + " "));
+		System.err.println();
 	}
 	
 }
