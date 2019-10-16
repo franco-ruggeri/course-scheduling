@@ -1,7 +1,6 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,6 +11,7 @@ import generator.Solution;
 import solvers.Solver;
 import solvers.annealing.Annealing;
 import solvers.genetic.Genetic;
+import solvers.lp.ILP;
 
 public class Main {
 
@@ -35,6 +35,7 @@ public class Main {
         List<Solver> solvers = new LinkedList<>();
         solvers.add(new Annealing(10000000, .01, problem));
         solvers.add(new Genetic(problem, 100, 0.2, 500, 60000));
+        solvers.add(new ILP(problem));
         
         // solve problem and evaluate performance
         System.err.println("Solving and evaluating solutions...");
@@ -46,12 +47,14 @@ public class Main {
         	saveSolution(solution, problem, s.getClass().getSimpleName() + ".csv");
         	
         	// evaluate
+        	System.err.println();
         	System.err.println("Solver: " + s.getClass().getSimpleName());
-        	System.err.println("Time: " + ((end-start)/1000) + " s");
+        	System.err.println("Time: " + ((end-start)/1000) + " seconds");
         	System.err.println("Score: " + Evaluator.evaluate(problem, solution));
-        	System.err.println("Total desired lectures: " + Arrays.stream(problem.getCourses()).sum());
-			System.err.println("Total scheduled lectures: " + Arrays.stream(solution.getSolution())
-					.flatMapToInt(a -> Arrays.stream(a)).filter(c -> c > 0).count());
+        	System.err.println("Total desired lectures: " + Evaluator.countDesiredLectures(problem));
+			System.err.println("Total scheduled lectures: " + Evaluator.countScheduledLectures(problem, solution));
+			System.err.println("Total enrolled lectures: " + Evaluator.countEnrolledLectures(problem));
+	        System.err.println("Total taken lectures: " + Evaluator.countTakenLectures(problem, solution));
         });
     }
     

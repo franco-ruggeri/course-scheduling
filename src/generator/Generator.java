@@ -86,13 +86,14 @@ public class Generator {
         return range[0] + rnd.nextInt(diff);
     }
 
-    private static boolean isValid(final Problem p) {
+    static boolean isValid(final Problem p) {
         final int capacity = p.getClassroomCount() * p.getTimeslotsCount();
         int sum = 0;
         final int[] c = p.getCourses();
         for (int i : c) {
             sum += i;
         }
+
         return capacity >= sum;
     }
 }
