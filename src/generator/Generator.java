@@ -31,11 +31,13 @@ public class Generator {
     }
 
     public static void main(String[] args) {
-        // final Generator generator = Generator.predefined();
-
-        // final Problem p = generator.generate();
-        // final Annealing annealing = new Annealing(100000, .01, p);
-        // final Solution solA = annealing.solve();
+        final String ploc = "problem.txt";
+        final String sloc = "solution.txt";
+        final String shloc = "solution.csv";
+        final Generator generator = Generator.predefined();
+        final Problem p = generator.generate();
+        final Annealing annealing = new Annealing(100000, .01, p);
+        final Solution solA = annealing.solve();
 
         // System.out.println("ANN: isvalid: " + Evaluator.isValid(p, solA));
         // System.out.println("ANN " + Evaluator.evaluate(p, solA));
@@ -46,11 +48,18 @@ public class Generator {
         // System.out.println("ILP: isvalid: " + Evaluator.isValid(p, solILP));
         // System.out.println("ILP " + Evaluator.evaluate(p, solILP));
         // System.out.println(solILP.toString());
-        final Problem p = readProblem("problem.txt");
-        final Solution s = readSolution("solution.txt");
-        System.err.println(p);
-        System.err.println("---------------------------------------------------------------------");
-        System.err.println(s);
+
+
+        // SAVE
+        saveProblem(p, ploc);
+        saveSolution(solA, sloc);
+        saveSolutionHuman(solA,p, shloc);
+        // LOAD
+        // final Problem p = readProblem("problem.txt");
+        // final Solution s = readSolution("solution.txt");
+        // System.err.println(p);
+        // System.err.println("---------------------------------------------------------------------");
+        // System.err.println(s);
     }
     // 0 means no course
     private final int[] rangeStudents;

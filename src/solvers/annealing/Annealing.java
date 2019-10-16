@@ -3,7 +3,6 @@ package solvers.annealing;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -36,7 +35,7 @@ public class Annealing implements Solver {
     }
 
     public Solution solve() {
-        int[][] schedule = new int[timeslots][classrooms];
+        int[][] schedule;
         int[][] newSchedule = new int[timeslots][classrooms];
         int[][] bestSchedule = new int[timeslots][classrooms];
         int cost = 0;
@@ -44,14 +43,11 @@ public class Annealing implements Solver {
         int bestCost = 0;
         double keep = 0;
         double r = 0;
-        init(schedule);
+        schedule = init();
         cost = Evaluator.evaluate(p, new Solution(schedule));
         bestCost = cost;
         while (temperature > 1) {
-            for (int i = 0; i < timeslots; i++) {
-                newSchedule[i] = Arrays.copyOf(schedule[i], schedule[i].length);
-            }
-            swap(newSchedule);
+            newSchedule = swap(schedule);
             newCost = Evaluator.evaluate(p, new Solution(newSchedule));
             if (newCost > cost) {
                 for (int i = 0; i < timeslots; i++) {
@@ -76,55 +72,60 @@ public class Annealing implements Solver {
             }
             temperature *= 1 - coolingRate;
         }
-        int total = 0;
-        Map<List<Integer>, Integer> groups = p.getGroupsCount();
-        for (List<Integer> group : p.getGroups()) {
-            for (int courseCode : group) {
-                total += groups.get(group) * coursesCount[courseCode - 1];
-            }
-        }
-        System.err.println("Total of lectures enrolled = " + total);
-        System.err.println("Lectures taken = " + Evaluator.lecturesTaken(p, new Solution(bestSchedule)));
+        System.err.println("Total of lectures enrolled = " + Evaluator.countEnrolledLectures(p));
+        System.err.println("Lectures taken = " + Evaluator.countTakenLectures(p, new Solution(bestSchedule)));
         return new Solution(bestSchedule);
     }
 
-    private void init(int[][] schedule) {
-        int aux = 0;
-        int randCourse = 0;
-        Map<Integer, Integer> coursesMap = new HashMap<Integer, Integer>();
-        for (int i = 1; i <= courses; i++) {
-            coursesMap.put(i, coursesCount[i - 1]);
-        }
-        for (int t = 0; t < timeslots; t++) {
-            for (int cl = 0; cl < classrooms; cl++) {
-                aux = 0;
-                while (aux == 0) {
-                    randCourse = ThreadLocalRandom.current().nextInt(courses) + 1;
-                    aux = coursesMap.getOrDefault(randCourse, 0);
-                }
-                schedule[t][cl] = randCourse;
-                coursesMap.put(randCourse, coursesMap.get(randCourse) - 1);
-                if (coursesMap.get(randCourse) == 0)
-                    coursesMap.remove(randCourse);
-                else {
-                    schedule[timeslots - 1 - t][classrooms - 1 - cl] = randCourse;
+    private int[][] init() {
+        int[][] schedule;
+        do {
+            schedule = new int[timeslots][classrooms];
+            int aux = 0;
+            int randCourse = 0;
+            Map<Integer, Integer> coursesMap = new HashMap<Integer, Integer>();
+            for (int i = 1; i <= courses; i++) {
+                coursesMap.put(i, coursesCount[i - 1]);
+            }
+            for (int t = 0; t < timeslots; t++) {
+                for (int cl = 0; cl < classrooms; cl++) {
+                    aux = 0;
+                    while (aux == 0) {
+                        randCourse = ThreadLocalRandom.current().nextInt(courses) + 1;
+                        aux = coursesMap.getOrDefault(randCourse, 0);
+                    }
+                    schedule[t][cl] = randCourse;
                     coursesMap.put(randCourse, coursesMap.get(randCourse) - 1);
                     if (coursesMap.get(randCourse) == 0)
                         coursesMap.remove(randCourse);
+                    else {
+                        schedule[timeslots - 1 - t][classrooms - 1 - cl] = randCourse;
+                        coursesMap.put(randCourse, coursesMap.get(randCourse) - 1);
+                        if (coursesMap.get(randCourse) == 0)
+                            coursesMap.remove(randCourse);
+                    }
+                    if (coursesMap.isEmpty())
+                        return schedule;
                 }
-                if (coursesMap.isEmpty())
-                    return;
             }
-        }
+        } while (Evaluator.isValid(p, new Solution(schedule)));
+        return null;
     }
 
-    private void swap(int[][] schedule) {
-        final int randTimeslot1 = ThreadLocalRandom.current().nextInt(timeslots);
-        final int randTimeslot2 = ThreadLocalRandom.current().nextInt(timeslots);
-        final int randClassroom1 = ThreadLocalRandom.current().nextInt(classrooms);
-        final int randClassroom2 = ThreadLocalRandom.current().nextInt(classrooms);
-        int aux = schedule[randTimeslot1][randClassroom1];
-        schedule[randTimeslot1][randClassroom1] = schedule[randTimeslot2][randClassroom2];
-        schedule[randTimeslot2][randClassroom2] = aux;
+    private int[][] swap(int[][] schedule) {
+        int[][] newSchedule = new int[schedule.length][];
+        do {
+            for (int i = 0; i < timeslots; i++) {
+                newSchedule[i] = Arrays.copyOf(schedule[i], schedule[i].length);
+            }
+            int randTimeslot1 = ThreadLocalRandom.current().nextInt(timeslots);
+            int randTimeslot2 = ThreadLocalRandom.current().nextInt(timeslots);
+            int randClassroom1 = ThreadLocalRandom.current().nextInt(classrooms);
+            int randClassroom2 = ThreadLocalRandom.current().nextInt(classrooms);
+            int aux = newSchedule[randTimeslot1][randClassroom1];
+            newSchedule[randTimeslot1][randClassroom1] = newSchedule[randTimeslot2][randClassroom2];
+            newSchedule[randTimeslot2][randClassroom2] = aux;
+        } while (Evaluator.isValid(p, new Solution(newSchedule)));
+        return newSchedule;
     }
 }

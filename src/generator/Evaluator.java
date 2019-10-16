@@ -135,7 +135,7 @@ public class Evaluator {
                             return false;
                         }
                         ocurrance = true;
-                        lectures[course-1]++;
+                        lectures[course - 1]++;
                     }
                 }
             }
@@ -148,16 +148,13 @@ public class Evaluator {
     }
 
     public static int countDesiredLectures(final Problem p) {
-    	return Arrays.stream(p.getCourses()).sum();
+        return Arrays.stream(p.getCourses()).sum();
     }
-    
+
     public static int countScheduledLectures(final Problem p, final Solution s) {
-    	return (int) Arrays.stream(s.getSolution())
-    			.flatMapToInt(a -> Arrays.stream(a))
-    			.filter(c -> c > 0)
-    			.count();
+        return (int) Arrays.stream(s.getSolution()).flatMapToInt(a -> Arrays.stream(a)).filter(c -> c > 0).count();
     }
-    
+
     public static int countTakenLectures(final Problem p, final Solution s) {
         int sum = 0;
         // schedule found
@@ -186,16 +183,16 @@ public class Evaluator {
         }
         return sum;
     }
-    
+
     public static int countEnrolledLectures(final Problem p) {
-    	int[] coursesCount = p.getCourses();
-    	int total = 0;
-	    Map<List<Integer>, Integer> groups = p.getGroupsCount();
-	    for (List<Integer> group : p.getGroups()) {
-	        for (int courseCode : group) {
-	            total += groups.get(group) * coursesCount[courseCode - 1];
-	        }
-	    }
-	    return total;
+        int[] coursesCount = p.getCourses();
+        int total = 0;
+        Map<List<Integer>, Integer> groups = p.getGroupsCount();
+        for (List<Integer> group : p.getGroups()) {
+            for (int courseCode : group) {
+                total += groups.get(group) * coursesCount[courseCode - 1];
+            }
+        }
+        return total;
     }
 }
