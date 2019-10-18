@@ -59,6 +59,7 @@ public class Problem {
         }
     }
 
+    //For debugging purposes
     public String toString() {
         String s = "#Courses: " + courseCount + "\t#TimeSlots: " + timeslotsCount + "\t#Classrooms: " + classroomCount
                 + "\t#Students: " + studentCount + "\n";
@@ -82,6 +83,7 @@ public class Problem {
         return s;
     }
 
+    //Compares two problems, for debugging
     public boolean compare(final Problem p){
         return (studentCount == p.getStudentCount() &&
                 courseCount == p.getCourseCount() &&
@@ -91,6 +93,7 @@ public class Problem {
                 courses.equals(p.getCourses()));
     }
 
+    //Getters:
     public int getCourseCount() {
         return courseCount;
     }
