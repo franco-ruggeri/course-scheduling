@@ -142,6 +142,7 @@ public class Generator {
         this.rangeCoursesLecturesCount = rangeCoursesLecturesCount;
     }
 
+    //Generates a new problem based on the given parameters in the constructor
     public Problem generate() {
         Problem p = null;
         do {
@@ -154,6 +155,7 @@ public class Generator {
         return p;
     }
 
+    //Generates groups of students (Students are in the same group if they take the same set of courses)
     private void generateGroups(Set<List<Integer>> groups, Map<List<Integer>, Integer> groupsCount, int[][] students) {
         for (int[] group : students) {
             List<Integer> key = Arrays.stream(group).boxed().collect(Collectors.toList());
@@ -162,7 +164,7 @@ public class Generator {
         }
     }
 
-    //
+    //Generates the students and which courses they should take based on the constructor parameters.
     private void generateCoursePerStudents(int[][] s, final int courseCount) {
         final int studentCount = s.length;
         ArrayList<Integer> courseList = new ArrayList<Integer>();
@@ -181,7 +183,7 @@ public class Generator {
         }
     }
 
-    // courseLectureCount
+    // Generates the amount of lectures that each course should have
     private void generateNumOfLecturesPerCourses(final int[] courses) {
         final int len = courses.length;
         for (int i = 0; i < len; i++) {
@@ -189,12 +191,13 @@ public class Generator {
         }
     }
 
-    // read from a file and outputs the problem
+    // returns a random number given a range.
     private int getRndNumber(final int[] range) {
         final int diff = range[1] - range[0];
         return range[0] + rnd.nextInt(diff);
     }
 
+    //Saves the solution to a file
     static void saveSolution(final Solution s, final String loc) {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
@@ -206,6 +209,7 @@ public class Generator {
         }
     }
 
+    //Saves the solution to a file that be easier to read by a human (compared to SaveSolution)
     static void saveSolutionHuman(final Solution s, final Problem p, final String loc) {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
@@ -217,6 +221,7 @@ public class Generator {
         }
     }
 
+    //Saves the problem to a file.
     static void saveProblem(final Problem p, final String loc) {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
@@ -230,6 +235,7 @@ public class Generator {
         }
     }
 
+    //Saves the problem to a file in a format that may be easier to read by a human
     static void saveProblemHuman(final Problem p, final String loc) {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
@@ -246,6 +252,7 @@ public class Generator {
         }
     }
 
+    //Reads a problem from a file.
     static Problem readProblem(final String loc) {
         List<String> lines = new ArrayList<>();
         try (Stream<String> stream = Files.lines(Paths.get(loc))) {
@@ -269,6 +276,7 @@ public class Generator {
         return p;
     }
 
+    //Reads a Solution from a file.
     static Solution readSolution(final String loc) {
         List<String> lines = new ArrayList<>();
         try (Stream<String> stream = Files.lines(Paths.get(loc))) {
@@ -286,6 +294,7 @@ public class Generator {
         return s;
     }
 
+    //Turns an int array into a string. Used in the save methods.
     static String intArrayToString(final int[][] a) {
         final int len = a.length;
         String ans = len + "\n";
@@ -300,6 +309,7 @@ public class Generator {
         return ans;
     }
 
+    //Turns an Array into a human readable string//organizes it.
     static String intArrayToHuman(final int[][] a, final int days, final int hoursPerDay) {
         final int len2 = a[0].length;
         String ans = "Day/Classroom,Hour";
@@ -323,6 +333,7 @@ public class Generator {
         return ans;
     }
 
+    //turns an array into a string
     static String intArrayToString(final int[] a) {
         final int len = a.length;
         String ans = "";
@@ -334,6 +345,7 @@ public class Generator {
         return ans;
     }
 
+    //Turns a string into an array
     static int[] stringToArray(String s) {
         final String[] split = s.split(",");
         final int[] a = new int[split.length];
@@ -343,6 +355,7 @@ public class Generator {
         return a;
     }
 
+    //Turns a 2d array into a sting
     static int[][] stringToDoubleArray(String s) {
         final String[] split = s.split(",");
         final int[][] a = new int[Integer.parseInt(split[0])][Integer.parseInt(split[1])];
@@ -354,6 +367,7 @@ public class Generator {
         return a;
     }
 
+    //Checks if the given problem is valid.
     static boolean isValid(final Problem p) {
         final int capacity = p.getClassroomCount() * p.getTimeslotsCount();
         int sum = 0;
