@@ -22,20 +22,20 @@ import solvers.lp.ILP;
  */
 public class Generator {
     public static Generator predefined() {
-        return new Generator(new int[] { 20, 30 }, // students
+        return new Generator(new int[] { 10, 15 }, // students
                 new int[] { 7, 10 }, // courses
                 new int[] { 1, 2 }, // days
-                new int[] { 20, 30 }, // hoursPerDay
-                new int[] { 5, 7 }, // classrooms
-                new int[] { 3, 7 }, // rangeStudentsCourseCount
-                new int[] { 5, 10 } // rangeCoursesLecturesCount
+                new int[] { 3, 15 }, // hoursPerDay
+                new int[] { 3, 5 }, // classrooms
+                new int[] { 3, 5 }, // rangeStudentsCourseCount
+                new int[] { 3, 5 } // rangeCoursesLecturesCount
         );
     }
 
     public static void main(String[] args) {
         String ploc = "ps0#";
         final Generator generator = Generator.predefined();
-        final int testCases = 1;
+        final int testCases = 5;
         for (int i = 0; i < testCases; i++) {
             final Problem p = generator.generate();
             saveProblem(p, ploc + i + ".txt");
@@ -49,7 +49,7 @@ public class Generator {
         for (int i = 0; i < testCases; i++) {
             System.out.println("ANN"+i);
             final Problem p = readProblem(ploc + i + ".txt");
-            final Annealing annealing = new Annealing(1000000, .01, p);
+                final Annealing annealing = new Annealing(1000000, .01, p);
             final long start = System.currentTimeMillis();
             final Solution s = annealing.solve();
             final long time = System.currentTimeMillis() - start;
