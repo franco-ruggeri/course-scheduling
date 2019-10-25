@@ -15,9 +15,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import solvers.annealing.Annealing;
 import solvers.genetic.Genetic;
-import solvers.hill.Hill;
 import solvers.lp.ILP;
 
+/**
+ * Class to generate random problems for the scheduling task
+ */
 public class Generator {
     public static Generator predefined() {
         return new Generator(new int[] { 20, 30 }, // students
@@ -197,7 +199,11 @@ public class Generator {
         return range[0] + rnd.nextInt(diff);
     }
 
-    //Saves the solution to a file
+    /**
+     * Function to save the solution in a file, if you want to be able to load it later
+     * @param s Solution
+     * @param loc file location
+     */
     static void saveSolution(final Solution s, final String loc) {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
@@ -209,7 +215,12 @@ public class Generator {
         }
     }
 
-    //Saves the solution to a file that be easier to read by a human (compared to SaveSolution)
+    /**
+     * Funtion to save the solution in a CSV format that can be easily displayed as a table for human confort
+     * @param s Solution
+     * @param p Problem
+     * @param loc file location
+     */
     static void saveSolutionHuman(final Solution s, final Problem p, final String loc) {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
@@ -221,7 +232,11 @@ public class Generator {
         }
     }
 
-    //Saves the problem to a file.
+    /**
+     * Funtion to save the program in a file, if you are planning to reuse it at some point
+     * @param p Problem
+     * @param loc file location
+     */
     static void saveProblem(final Problem p, final String loc) {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
@@ -235,7 +250,9 @@ public class Generator {
         }
     }
 
-    //Saves the problem to a file in a format that may be easier to read by a human
+    /**
+     * Funtion to save the problem in a file with some labels for debbuging purposes
+     */
     static void saveProblemHuman(final Problem p, final String loc) {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
@@ -252,7 +269,11 @@ public class Generator {
         }
     }
 
-    //Reads a problem from a file.
+    /**
+     * Load Problem from a file writen in the format that the saveProblem fuction generates them.
+     * @param loc file location
+     * @return Problem
+     */
     static Problem readProblem(final String loc) {
         List<String> lines = new ArrayList<>();
         try (Stream<String> stream = Files.lines(Paths.get(loc))) {
@@ -276,7 +297,11 @@ public class Generator {
         return p;
     }
 
-    //Reads a Solution from a file.
+    /**
+     * Load Solution from a file writen in the format that the saveSolution fuction generates them.
+     * @param loc file Location
+     * @return Solution
+     */
     static Solution readSolution(final String loc) {
         List<String> lines = new ArrayList<>();
         try (Stream<String> stream = Files.lines(Paths.get(loc))) {
@@ -294,7 +319,11 @@ public class Generator {
         return s;
     }
 
-    //Turns an int array into a string. Used in the save methods.
+    /**
+     * Funtion used by the saving functions to convert matrices into strings.
+     * @param a matrix
+     * @return string
+     */
     static String intArrayToString(final int[][] a) {
         final int len = a.length;
         String ans = len + "\n";
@@ -309,7 +338,13 @@ public class Generator {
         return ans;
     }
 
-    //Turns an Array into a human readable string//organizes it.
+    /**
+     * Funtion use to generate a CSV string that would display a matrix as a table by days and hours 
+     * @param a schedule matrix
+     * @param days
+     * @param hoursPerDay
+     * @return CSV string
+     */
     static String intArrayToHuman(final int[][] a, final int days, final int hoursPerDay) {
         final int len2 = a[0].length;
         String ans = "Day/Classroom,Hour";
@@ -333,7 +368,11 @@ public class Generator {
         return ans;
     }
 
-    //turns an array into a string
+    /**
+     * Funtion used by the saving functions to convert arrays into strings.
+     * @param a array
+     * @return String
+     */
     static String intArrayToString(final int[] a) {
         final int len = a.length;
         String ans = "";
@@ -345,7 +384,11 @@ public class Generator {
         return ans;
     }
 
-    //Turns a string into an array
+    /**
+     * Funtion used by the reading functions to reconstruct arrays and matrices
+     * @param s String
+     * @return array
+     */
     static int[] stringToArray(String s) {
         final String[] split = s.split(",");
         final int[] a = new int[split.length];
@@ -367,7 +410,11 @@ public class Generator {
         return a;
     }
 
-    //Checks if the given problem is valid.
+    /**
+     * Function that ensures that the generated problem is solvable
+     * @param p Problem
+     * @return Boolean
+     */
     static boolean isValid(final Problem p) {
         final int capacity = p.getClassroomCount() * p.getTimeslotsCount();
         int sum = 0;
