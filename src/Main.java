@@ -1,8 +1,6 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.PrintWriter;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import generator.Evaluator;
 import generator.Generator;
@@ -14,91 +12,130 @@ import solvers.genetic.Genetic;
 //import solvers.lp.ILP;
 
 /**
- * Main class to run test cases and compare algorithms.
+ * Main class to run test cases and compare algorithms
  */
 public class Main {
-
+	private static final int TEST_CASES = 5;	// test cases for each problem set
+	
+	// each generator represents a problem set
+	private static final Generator[] generators = new Generator[] {
+		new Generator(
+			new int[] { 10, 15 }, 	// students
+	        new int[] { 7, 10 }, 	// courses
+	        new int[] { 1, 2 }, 	// days
+	        new int[] { 3, 15 }, 	// hoursPerDay
+	        new int[] { 3, 5 }, 	// classrooms
+	        new int[] { 3, 5 }, 	// rangeStudentsCourseCount
+	        new int[] { 3, 5 } 		// rangeCoursesLecturesCount
+		),
+		new Generator(
+			new int[] { 20, 30 }, 	// students
+	        new int[] { 7, 10 }, 	// courses
+	        new int[] { 1, 2 }, 	// days
+	        new int[] { 5, 15 }, 	// hoursPerDay
+	        new int[] { 3, 5 }, 	// classrooms
+	        new int[] { 3, 5 }, 	// rangeStudentsCourseCount
+	        new int[] { 3, 5 } 		// rangeCoursesLecturesCount
+		),
+		new Generator(
+			new int[] { 10, 15 }, 	// students
+	        new int[] { 7, 10 }, 	// courses
+	        new int[] { 1, 2 }, 	// days
+	        new int[] { 100, 200 }, // hoursPerDay
+	        new int[] { 3, 5 }, 	// classrooms
+	        new int[] { 3, 5 }, 	// rangeStudentsCourseCount
+	        new int[] { 3, 5 } 		// rangeCoursesLecturesCount
+		),
+		new Generator(
+			new int[] { 20, 30 }, 	// students
+	        new int[] { 7, 10 }, 	// courses
+	        new int[] { 1, 2 }, 	// days
+	        new int[] { 20, 30 }, 	// hoursPerDay
+	        new int[] { 5, 7 }, 	// classrooms
+	        new int[] { 3, 7 }, 	// rangeStudentsCourseCount
+	        new int[] { 5, 10 } 	// rangeCoursesLecturesCount
+		)
+	};
+	
+	private static class Performance {
+		Solver solver;
+		long time;
+		long score;
+		int percentageInfeasibleLectures;
+		int percentageScheduledLectures;
+		int percentageOverlaps;
+		int adequateNumberOfLectures;
+	}
+	
     public static void main(String[] args) {
-    	// generate problem
-    	System.out.println("Generating problem...");
-        Generator generator = new Generator(
-        		new int[] { 100, 500 }, // students
-        		new int[] { 10, 20 }, 	// courses
-        		new int[] { 20, 21 }, 	// days
-	            new int[] { 4, 5 }, 	// hoursPerDay
-	            new int[] { 5, 6 }, 	// classrooms
-	            new int[] { 5, 8 }, 	// rangeStudentsCourseCount
-	            new int[] { 7, 15 } 	// rangeCoursesLecturesCount
-        );
-        Problem problem = generator.generate();
-        saveProblem(problem, "Problem.txt");
-        System.out.println("Problem generated and saved");
-        
-        // generate solvers
-        List<Solver> solvers = new LinkedList<>();
-        solvers.add(new Annealing(10000000, .01, problem));
-        solvers.add(new Genetic(problem, 100, 0.05, Double.MAX_VALUE, 60000));
-//        solvers.add(new ILP(problem));
-        
-        // solve problem and evaluate performance
-        System.out.println("Solving and evaluating solutions...");
-        solvers.forEach(s -> {
-        	// solve
-        	long start = System.currentTimeMillis();
-        	Solution solution = s.solve();
-        	long end = System.currentTimeMillis();
-        	saveSolution(solution, problem, s.getClass().getSimpleName() + ".csv");
-        	
-        	// evaluate
-        	System.out.println();
-        	System.out.println("Solver: " + s.getClass().getSimpleName());
-        	System.out.println("Time: " + ((end-start)/1000) + " seconds");
-        	System.out.println("Total desired lectures: " + Evaluator.countDesiredLectures(problem));
-			System.out.println("Total scheduled lectures: " + Evaluator.countScheduledLectures(problem, solution));
-			System.out.println("Total unfeasible lectures: " + Evaluator.countUnfeasibleLectures(problem, solution));
-	        System.out.println("Total overlaps: " + Evaluator.countOverlaps(problem, solution));
-        });
-    }
-    
-    public static Solution readSolution(final String loc) {
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(loc));
-            Solution s = new Solution(stringToDoubleArray(reader.readLine()));
-            reader.close();
-            return s;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+    	
+    	for (int i=0; i<generators.length; i++) {
+    		Map<String, Performance> performance = new HashMap<>();
+    		performance.put("Simulated Annealing", new Performance());
+    		performance.put("Genetic Algorithm", new Performance());
+    		performance.put("ILP", new Performance());
+    		
+    		for (int j=0; j<TEST_CASES; j++) {
+    			// generate problem
+            	System.out.println("Generating problem...");
+                Problem problem = generators[i].generate();
+                saveProblem(problem, "problem_" + i + "_" + j + ".txt");
+                System.out.println("Problem generated and saved");
+                Evaluator evaluator = new Evaluator(problem);
+                
+                // create solvers
+                performance.get("Simulated Annealing").solver = new Annealing(10000000, .01, problem, evaluator);
+                performance.get("Genetic Algorithm").solver = new Genetic(problem, evaluator, 100, 0.05, Integer.MAX_VALUE, 60000);;
+//                performance.get("Genetic Algorithm").solver = new ILP(problem);
+                
+                // solve and fill performance
+                System.out.println("Solving...");
+                for (Performance p : performance.values()) {
+                	// solve
+                    long start = System.currentTimeMillis();
+                    Solution solution = p.solver.solve();
+                    saveSolution(solution, problem, "solution_" + p.solver.getClass().getSimpleName().toLowerCase().replaceAll(" ", "_") + "_" + i + "_" + j + ".csv");
+                    long end = System.currentTimeMillis();
+                    
+                    // update performance
+                    p.time += end - start;
+                    p.score += evaluator.evaluate(solution);
+                    p.percentageInfeasibleLectures += evaluator.percentageInfeasibleLectures(solution);
+                    p.percentageScheduledLectures += evaluator.percentageScheduledLectures(solution);
+                    p.percentageOverlaps += evaluator.percentageOverlaps(solution);
+                    p.adequateNumberOfLectures += evaluator.checkNumberOfLectures(solution) ? 1 : 0;
+                }
+    		}
+    		
+    		// print average performance
+    		performance.entrySet().stream().forEach(e -> {
+    			String solverName = e.getKey();
+    			Performance p = e.getValue();
+    			
+    			System.out.println();
+                System.out.println("Solver: " + solverName);
+                System.out.println("Time: " + p.time / (TEST_CASES*1000) + " seconds");
+                System.out.println("Score: " + p.score / TEST_CASES);
+                System.out.println("Percentage infeasible lectures: " + p.percentageInfeasibleLectures / TEST_CASES);
+                System.out.println("Percentage scheduled lectures: " + p.percentageScheduledLectures / TEST_CASES);
+                System.out.println("Percentage overlaps: " + p.percentageOverlaps / TEST_CASES);
+                System.out.println("Adequate number of lectures: " + p.adequateNumberOfLectures + " out of " + TEST_CASES);
+    		});
+    	}
     }
 
-    public static void saveSolution(final Solution s, final Problem p, final String loc) {
+    private static void saveSolution(final Solution s, final Problem p, final String loc) {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
-            final int[][] a = s.getSolution();
-            writer.print(intArrayToCSV(a, p.getDays(), p.getHoursPerDay()));
+            final int[][] a = s.getSchedule();
+            writer.print(intArrayToHuman(a, p.getDays(), p.getHoursPerDay()));
             writer.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static Problem readProblem(final String loc) {
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(loc));
-            final String[] splitOne = reader.readLine().split(" ");
-            final Problem p = new Problem(Integer.parseInt(splitOne[0]), Integer.parseInt(splitOne[1]),
-                    Integer.parseInt(splitOne[2]), Integer.parseInt(splitOne[3]), Integer.parseInt(splitOne[4]),
-                    stringToDoubleArray(reader.readLine()), stringToArray(reader.readLine()));
-            reader.close();
-            return p;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static void saveProblem(final Problem p, final String loc) {
+    private static void saveProblem(final Problem p, final String loc) {
         try {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
             writer.println("students, courses, timeslots, classrooms");
@@ -107,36 +144,37 @@ public class Main {
             writer.println("courses by student");
             writer.println(intArrayToString(p.getStudents()));
             writer.println("lessons by course");
-            writer.println(intArrayToString(p.getCourses()));
+            writer.println(intArrayToString(p.getLecturesPerCourse()));
             writer.close();
         } catch (Exception e) {
-        	e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
     private static String intArrayToString(final int[][] a) {
         final int len = a.length;
-        String ans = "";
+        String ans = len + "\n";
         for (int i = 0; i < len; i++) {
-        	int len2 = a[i].length;
+            int len2 = a[i].length;
             for (int j = 0; j < len2; j++) {
-                ans += a[i][j] + " ";
+                ans += a[i][j] + ",";
             }
+            ans = ans.substring(0, ans.length() - 1);
             ans += "\n";
         }
         return ans;
     }
 
-    private static String intArrayToCSV(final int[][] a, final int days, final int hoursPerDay) {
+    private static String intArrayToHuman(final int[][] a, final int days, final int hoursPerDay) {
         final int len2 = a[0].length;
         String ans = "Day/Classroom,Hour";
-        final String[] week = {"Monday","Tuesday", "Wednesday", "Thursday", "Friday"};
+        final String[] week = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
         for (int cl = 0; cl < len2; cl++) {
-            ans += "," + (cl+1);
+            ans += "," + (cl + 1);
         }
         ans += "\n";
         for (int day = 0; day < days; day++) {
-            ans += week[day%5];
+            ans += week[day % 5];
             for (int hpd = 0; hpd < hoursPerDay; hpd++) {
                 int i = hpd * (day + 1);
                 ans += "," + hpd;
@@ -152,32 +190,13 @@ public class Main {
 
     private static String intArrayToString(final int[] a) {
         final int len = a.length;
-        String ans = len + " ";
+        String ans = "";
         for (int i = 0; i < len; i++) {
-            ans += a[i] + " ";
+            ans += a[i] + ",";
         }
+        ans = ans.substring(0, ans.length() - 1);
         ans += "\n";
         return ans;
-    }
-
-    private static int[] stringToArray(String s) {
-        final String[] split = s.split(" ");
-        final int[] a = new int[Integer.parseInt(split[0])];
-        for (int i = 0; i < a.length; i++) {
-            a[i] = Integer.parseInt(split[i + 1]);
-        }
-        return a;
-    }
-
-    private static int[][] stringToDoubleArray(String s) {
-        final String[] split = s.split(" ");
-        final int[][] a = new int[Integer.parseInt(split[0])][Integer.parseInt(split[1])];
-        for (int i = 0; i < a.length; i++) {
-            for (int j = 0; j < a[0].length; j++) {
-                a[i][j] = Integer.parseInt(split[j + i * a.length + 2]);
-            }
-        }
-        return a;
     }
 
 }

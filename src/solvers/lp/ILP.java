@@ -18,28 +18,27 @@ public class ILP implements Solver {
     }
 
     public Solution solve() {
-//        int[][] timeSchedule = new int[timeslotsNum][classroomsNum];
         LPWizard lpw = new LPWizard();
 
-        final Map<List<Integer>, Integer> map = p.getGroupsCount();
+        final Map<List<Integer>, Integer> map = p.getStudentGroups(); //Get groups
         final int timeSlots = p.getTimeslotsCount();
         final int classRoomCount = p.getClassroomCount();
-        final int[] pCourses = p.getCourses();
+        final int[] pCourses = p.getLecturesPerCourse(); //get the amount of lectures per course
         final int courseCount = p.getCourseCount();
-        int sg = 0;
+        int sg = 0; //Student group number
 
         //StudentGroups:
         for (Map.Entry<List<Integer>, Integer> entry : map.entrySet()) {
-            //Objective:
             final int SGCount = entry.getValue();
             final List<Integer> courses = entry.getKey();
 
             for (int t = 0; t < timeSlots; t++) {
-                final String constraint = getC(sg, t);
-                lpw.plus(constraint, SGCount);
-                lpw.addConstraint("pos"+t+"sg"+sg, 0, "<=").plus(constraint);
-                lpw.setInteger(constraint);
-                final LPWizardConstraint currentConst = lpw.addConstraint("const#"+constraint, 1, ">=");//constraint for constraint
+                final String constraint = getC(sg, t); // Since the solver uses names, want the names to be the same/accurate.
+                lpw.plus(constraint, SGCount);//Objective function |SG| (Cij)
+                lpw.addConstraint("pos"+t+"sg"+sg, 0, "<=").plus(constraint);//New constraint, Cij >= 0
+                lpw.setInteger(constraint);//Cij is an integer variable
+                //Constraints that will increase the obj function the more conflicts there are
+                final LPWizardConstraint currentConst = lpw.addConstraint("const#"+constraint, 1, ">=");
                 currentConst.plus(constraint, -1);
                 for (final int course: courses){
                     final String courseName = getT(t, course);
@@ -50,8 +49,7 @@ public class ILP implements Solver {
             sg++;
         }
 
-
-        //for every course, for every timeslot
+        //Constraint so that the amount of lectures per course is equal to the amount given in the problem set.
         for (int c = 0; c < courseCount; c++) {
             final LPWizardConstraint courseConst = lpw.addConstraint("cCourse"+c, pCourses[c], "=");
             for (int t = 0; t < timeSlots; t++) {
@@ -60,6 +58,7 @@ public class ILP implements Solver {
             courseConst.setAllVariablesBoolean();
         }
 
+        //Constraint so that there may not be more lectures than there are classrooms for a time slot t.
         for (int t = 0; t < timeSlots; t++) {
             final LPWizardConstraint classRoomConst = lpw.addConstraint("crC"+t, classRoomCount, ">=");
             for (int c = 0; c < courseCount; c++) {
@@ -68,15 +67,18 @@ public class ILP implements Solver {
             classRoomConst.setAllVariablesBoolean();
         }
 
+        //Minimize the objective function
         lpw.setMinProblem(true);
         //lpw.setAllVariablesInteger();
+        //Solver
         LPSolution solution = lpw.solve();
+        //DEBUGGING tools
 //        System.out.println(lpw.getLP().convertToCPLEX());
 //        System.out.println("solution");
 //        System.out.println(solution);
 //        System.out.println(solution.getBoolean(getT(0, 0)));
 
-        //solution to Solution
+        //LP solution to Solution object
         int[][] sol = new int[timeSlots][classRoomCount];
         for (int t = 0; t < timeSlots; t++) {
             int currentClassRoom = 0;
@@ -87,10 +89,6 @@ public class ILP implements Solver {
                 }
             }
         }
-
-        //System.out.println(solution.getBoolean("x1"));
-        //
-        // long value = solution.getInteger(solutionInteger);
 
         return new Solution(sol);
     }

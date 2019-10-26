@@ -2,70 +2,76 @@ package generator;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
+/*
+ * Represents a problem as a set of parameters. Some data structures are also 
+ * generated to simplify the analysis of solutions.
+ */
 public class Problem {
-    private final int studentCount;
-    private final int courseCount; // each course is assigned a number from 1 [inc] to courseCount [inc] at
-    private final int days; // days of the schedule
-    private final int hoursPerDay; // lessons per day
-    private final int timeslotsCount; // timeslots of all courses in total
-    private final int classroomCount;
-
-    // each int[] is the array of the courses the students will take
-    // first value is index of student, second value is the list of index of a
-    // course
+	/*
+	 * Important: course IDs start from 1, 0 is reserved for no course.
+	 */
+	
+	private final int timeslotsCount; 	// number of time slots
+    private final int classroomCount;	// number of classrooms
+    private final int studentCount;		// number of students
+    private final int courseCount; 		// number of courses
+    
+    // number of lectures for courses (each course requires its own number)
+    private final int[] lecturesPerCourse;
+    
+    /*
+     * A student is represented as array of courses he wishes to take.
+     * So, an array of students is an array of array of courses.
+     */
     private final int[][] students;
-
-    // each course needs to happen x amount of times
-    private final int[] courses;
-
-    // a group is a set of courses that one or more students are taking
-    private Set<List<Integer>> groups = new HashSet<List<Integer>>();
-    // in groups count we can consult how many students are taking a group, set of
-    // courses.
-    private Map<List<Integer>, Integer> groupsCount = new HashMap<List<Integer>, Integer>();
+    
+	/*
+	 * To analyze more efficiently the overlaps, it is convenient to group students
+	 * that take exactly the same set of courses. The key of this map is the list of
+	 * courses taken by the group of students (in other words, a type of student),
+	 * while the value is the size of the group.
+	 */
+    private Map<List<Integer>, Integer> studentGroups = new HashMap<>();
+    
+    // additional info for visualization of schedule
+    private final int dayCount; 		// number of days of the schedule
+    private final int timeslotsPerDay; 	// number of time slots per day
 
     public Problem(final int studentCount, final int courseCount, final int days, final int hoursPerDay,
             final int classRoomCount) {
-        this.days = days;
-        this.hoursPerDay = hoursPerDay;
+        this.dayCount = days;
+        this.timeslotsPerDay = hoursPerDay;
         this.timeslotsCount = days * hoursPerDay;
         this.classroomCount = classRoomCount;
         this.studentCount = studentCount;
         this.courseCount = courseCount;
         this.students = new int[studentCount][];
-        this.courses = new int[courseCount];
+        this.lecturesPerCourse = new int[courseCount];
     }
-
-    public Problem(final int studentCount, final int courseCount, final int days, final int hoursPerDay,
-            final int classRoomCount, final int[][] students, final int[] courses) {
-        this.days = days;
-        this.hoursPerDay = hoursPerDay;
-        this.timeslotsCount = days * hoursPerDay;
-        this.classroomCount = classRoomCount;
-        this.studentCount = studentCount;
-        this.courseCount = courseCount;
-        this.students = students;
-        this.courses = courses;
-        for (int[] group : students) {
-            List<Integer> key = Arrays.stream(group).boxed().collect(Collectors.toList());
-            this.groups.add(key);
-            this.groupsCount.put(key, groupsCount.getOrDefault(key, 0) + 1);
-        }
+    
+	/**
+	 * Checks if a problem is feasible, i.e. if there are enough classrooms and time
+	 * slots for the total lectures.
+	 * 
+	 * @return true if the problem is valid
+	 */
+    public boolean isValid() {
+        final int capacity = classroomCount * timeslotsCount;
+        int sum = Arrays.stream(lecturesPerCourse).sum();
+        return capacity >= sum;
     }
-
+    
+    @Override
     public String toString() {
         String s = "#Courses: " + courseCount + "\t#TimeSlots: " + timeslotsCount + "\t#Classrooms: " + classroomCount
                 + "\t#Students: " + studentCount + "\n";
         s += "Number of lecture(s) per course:\n";
         s += "[";
         for (int i = 0; i < courseCount; i++) {
-            s += " " + courses[i];
+            s += " " + lecturesPerCourse[i];
         }
         s += " ]\n";
 
@@ -82,15 +88,25 @@ public class Problem {
         return s;
     }
 
-    public boolean compare(final Problem p){
+    @Override
+    public boolean equals(Object o){
+    	if (!(o instanceof Problem))
+    		return false;
+    	
+    	Problem p = (Problem) o;
         return (studentCount == p.getStudentCount() &&
                 courseCount == p.getCourseCount() &&
                 timeslotsCount == p.getTimeslotsCount() &&
                 classroomCount == p.getClassroomCount() &&
                 students.equals(p.getStudents()) &&
-                courses.equals(p.getCourses()));
+                lecturesPerCourse.equals(p.getLecturesPerCourse()));
     }
 
+    
+    /*
+     * Getters
+     */
+    
     public int getCourseCount() {
         return courseCount;
     }
@@ -107,27 +123,23 @@ public class Problem {
         return students;
     }
 
-    public int[] getCourses() {
-        return courses;
+    public int[] getLecturesPerCourse() {
+        return lecturesPerCourse;
     }
 
     public int getStudentCount() {
         return studentCount;
     }
 
-    public Map<List<Integer>, Integer> getGroupsCount() {
-        return groupsCount;
-    }
-
-    public Set<List<Integer>> getGroups() {
-        return groups;
+    public Map<List<Integer>, Integer> getStudentGroups() {
+        return studentGroups;
     }
 
     public int getDays() {
-        return days;
+        return dayCount;
     }
 
     public int getHoursPerDay() {
-        return hoursPerDay;
+        return timeslotsPerDay;
     }
 }

@@ -6,11 +6,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Generator of random problems given ranges of parameters
+ */
 public class Generator {
-    // 0 means no course
     private final int[] rangeStudents;
     private final int[] rangeCourses;
     private final int[] rangeDays;
@@ -18,9 +19,8 @@ public class Generator {
     private final int[] rangeClassrooms;
     private final int[] rangeStudentsCourseCount;
     private final int[] rangeCoursesLecturesCount;
-
-    private final Random rnd = new Random();
-
+    private static final Random random = new Random();
+    
     public Generator(final int[] rangeStudents, final int[] rangeNumCourses, final int[] rangeDays,
             final int[] rangeHoursPerDay, final int[] rangeClassrooms, final int[] rangeStudentsCourseCount,
             final int[] rangeCoursesLecturesCount) {
@@ -33,27 +33,28 @@ public class Generator {
         this.rangeCoursesLecturesCount = rangeCoursesLecturesCount;
     }
 
+    //Generates a new problem based on the given parameters in the constructor
     public Problem generate() {
         Problem p = null;
         do {
-            p = new Problem(getRndNumber(rangeStudents), getRndNumber(rangeCourses), getRndNumber(rangeDays),
-                    getRndNumber(rangeHoursPerDay), getRndNumber(rangeClassrooms));
+            p = new Problem(getRandomInRange(rangeStudents), getRandomInRange(rangeCourses), getRandomInRange(rangeDays),
+                    getRandomInRange(rangeHoursPerDay), getRandomInRange(rangeClassrooms));
             generateCoursePerStudents(p.getStudents(), p.getCourseCount());
-            generateNumOfLecturesPerCourses(p.getCourses());
-            generateGroups(p.getGroups(), p.getGroupsCount(), p.getStudents());
-        } while (!isValid(p));
+            generateNumOfLecturesPerCourses(p.getLecturesPerCourse());
+            generateGroups(p.getStudentGroups(), p.getStudents());
+        } while (p.isValid());
         return p;
     }
 
-    private void generateGroups(Set<List<Integer>> groups, Map<List<Integer>, Integer> groupsCount, int[][] students) {
+    //Generates groups of students (Students are in the same group if they take the same set of courses)
+    private void generateGroups(Map<List<Integer>, Integer> groupsCount, int[][] students) {
         for (int[] group : students) {
             List<Integer> key = Arrays.stream(group).boxed().collect(Collectors.toList());
-            groups.add(key);
             groupsCount.put(key, groupsCount.getOrDefault(key, 0) + 1);
         }
     }
 
-    //
+    //Generates the students and which courses they should take based on the constructor parameters.
     private void generateCoursePerStudents(int[][] s, final int courseCount) {
         final int studentCount = s.length;
         ArrayList<Integer> courseList = new ArrayList<Integer>();
@@ -62,7 +63,7 @@ public class Generator {
         }
 
         for (int i = 0; i < studentCount; i++) {
-            final int registeredCoursesCount = getRndNumber(rangeStudentsCourseCount);
+            final int registeredCoursesCount = getRandomInRange(rangeStudentsCourseCount);
             s[i] = new int[registeredCoursesCount];
             Collections.shuffle(courseList);
             for (int j = 0; j < registeredCoursesCount; j++) {
@@ -72,28 +73,18 @@ public class Generator {
         }
     }
 
-    // courseLectureCount
+    // Generates the amount of lectures that each course should have
     private void generateNumOfLecturesPerCourses(final int[] courses) {
         final int len = courses.length;
         for (int i = 0; i < len; i++) {
-            courses[i] = getRndNumber(rangeCoursesLecturesCount);
+            courses[i] = getRandomInRange(rangeCoursesLecturesCount);
         }
     }
 
-    // read from a file and outputs the problem
-    private int getRndNumber(final int[] range) {
+    // returns a random number given a range.
+    private int getRandomInRange(final int[] range) {
         final int diff = range[1] - range[0];
-        return range[0] + rnd.nextInt(diff);
+        return range[0] + random.nextInt(diff);
     }
 
-    static boolean isValid(final Problem p) {
-        final int capacity = p.getClassroomCount() * p.getTimeslotsCount();
-        int sum = 0;
-        final int[] c = p.getCourses();
-        for (int i : c) {
-            sum += i;
-        }
-
-        return capacity >= sum;
-    }
 }

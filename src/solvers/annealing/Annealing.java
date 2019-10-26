@@ -12,30 +12,35 @@ import generator.Solution;
 import solvers.Solver;
 
 /**
- * Annealing
+ * Simulated Annealing
+ * Is a seach method to solve combinatorial problems inpired by the metalurgic process of annealing
+ * were a metal is heated to a high temperature and then is cooled gradualy to reach the best possible struture
+ * The analogy will be tha next:
+ * Solutions of a combinatorial problem ~ physical states
+ * Heuristic Value ~ Energy of a state
  */
 public class Annealing implements Solver {
-
+	
     private int temperature;
     private double coolingRate;
     private final int courses;
     private final int[] coursesCount;
     private final int timeslots;
     private final int classrooms;
-    private final Problem p;
+    private final Evaluator e;
 
-    public Annealing(int temperature, double coolingRate, Problem p) {
+    public Annealing(int temperature, double coolingRate, Problem p, Evaluator e) {
         this.temperature = temperature;
         this.coolingRate = coolingRate;
-        this.p = p;
+        this.e = e;
         this.courses = p.getCourseCount();
-        this.coursesCount = p.getCourses();
+        this.coursesCount = p.getLecturesPerCourse();
         this.timeslots = p.getTimeslotsCount();
         this.classrooms = p.getClassroomCount();
     }
 
     public Solution solve() {
-        int[][] schedule = new int[timeslots][classrooms];
+        int[][] schedule;
         int[][] newSchedule = new int[timeslots][classrooms];
         int[][] bestSchedule = new int[timeslots][classrooms];
         int cost = 0;
@@ -43,19 +48,22 @@ public class Annealing implements Solver {
         int bestCost = 0;
         double keep = 0;
         double r = 0;
-        init(schedule);
-        cost = Evaluator.evaluate(p, new Solution(schedule));
+        // generate random schedule to start with
+        schedule = init();
+        cost = e.evaluate(new Solution(schedule));
         bestCost = cost;
+        // while we are not frozen
         while (temperature > 1) {
-            for (int i = 0; i < timeslots; i++) {
-                newSchedule[i] = Arrays.copyOf(schedule[i], schedule[i].length);
-            }
-            swap(newSchedule);
-            newCost = Evaluator.evaluate(p, new Solution(newSchedule));
+            // generate a neighbor solution by swaping two random lectures
+            newSchedule = swap(schedule);
+            newCost = e.evaluate(new Solution(newSchedule));
+            // if the new cost is better
             if (newCost > cost) {
+                // we make the new schedule the schedule
                 for (int i = 0; i < timeslots; i++) {
                     schedule[i] = Arrays.copyOf(newSchedule[i], newSchedule[i].length);
                 }
+                // if necessary we update the best schedule
                 if (newCost > bestCost) {
                     for (int i = 0; i < timeslots; i++) {
                         bestSchedule[i] = Arrays.copyOf(newSchedule[i], newSchedule[i].length);
@@ -63,7 +71,7 @@ public class Annealing implements Solver {
                     bestCost = newCost;
                 }
                 cost = newCost;
-            } else {
+            } else { // if not we use the temperature and randomness
                 keep = Math.exp((cost - newCost) / temperature);
                 r = ThreadLocalRandom.current().nextDouble();
                 if (keep > r) {
@@ -73,48 +81,74 @@ public class Annealing implements Solver {
                     cost = newCost;
                 }
             }
+            // we decrease the temperature
             temperature *= 1 - coolingRate;
         }
+
         return new Solution(bestSchedule);
     }
 
-    private void init(int[][] schedule) {
-        int aux = 0;
-        int randCourse = 0;
-        Map<Integer, Integer> coursesMap = new HashMap<Integer, Integer>();
-        for (int i = 1; i <= courses; i++) {
-            coursesMap.put(i, coursesCount[i - 1]);
-        }
-        for (int t = 0; t < timeslots; t++) {
-            for (int cl = 0; cl < classrooms; cl++) {
-                aux = 0;
-                while (aux == 0) {
-                    randCourse = ThreadLocalRandom.current().nextInt(courses) + 1;
-                    aux = coursesMap.getOrDefault(randCourse, 0);
-                }
-                schedule[t][cl] = randCourse;
-                coursesMap.put(randCourse, coursesMap.get(randCourse) - 1);
-                if (coursesMap.get(randCourse) == 0)
-                    coursesMap.remove(randCourse);
-                else {
-                    schedule[timeslots - 1 - t][classrooms - 1 - cl] = randCourse;
+    /**
+     * Generate random schedule
+     * @return valid schedule
+     */
+    private int[][] init() {
+        int[][] schedule;
+        Solution s = null;
+        
+        do {
+            schedule = new int[timeslots][classrooms];
+            int aux = 0;
+            int randCourse = 0;
+            Map<Integer, Integer> coursesMap = new HashMap<Integer, Integer>();
+            for (int i = 1; i <= courses; i++) {
+                coursesMap.put(i, coursesCount[i - 1]);
+            }
+            for (int t = 0; t < timeslots; t++) {
+                for (int cl = 0; cl < classrooms; cl++) {
+                    aux = 0;
+                    while (aux == 0) {
+                        randCourse = ThreadLocalRandom.current().nextInt(courses) + 1;
+                        aux = coursesMap.getOrDefault(randCourse, 0);
+                    }
+                    schedule[t][cl] = randCourse;
                     coursesMap.put(randCourse, coursesMap.get(randCourse) - 1);
                     if (coursesMap.get(randCourse) == 0)
                         coursesMap.remove(randCourse);
+                    else {
+                        schedule[timeslots - 1 - t][classrooms - 1 - cl] = randCourse;
+                        coursesMap.put(randCourse, coursesMap.get(randCourse) - 1);
+                        if (coursesMap.get(randCourse) == 0)
+                            coursesMap.remove(randCourse);
+                    }
+                    if (coursesMap.isEmpty())
+                        break;
                 }
-                if (coursesMap.isEmpty())
-                    return;
             }
-        }
+            
+            s = new Solution(schedule);
+        } while (!e.checkFeasibleLectures(s) || !e.checkNumberOfLectures(s));
+        
+        return schedule;
     }
 
-    private void swap(int[][] schedule) {
-        final int randTimeslot1 = ThreadLocalRandom.current().nextInt(timeslots);
-        final int randTimeslot2 = ThreadLocalRandom.current().nextInt(timeslots);
-        final int randClassroom1 = ThreadLocalRandom.current().nextInt(classrooms);
-        final int randClassroom2 = ThreadLocalRandom.current().nextInt(classrooms);
-        int aux = schedule[randTimeslot1][randClassroom1];
-        schedule[randTimeslot1][randClassroom1] = schedule[randTimeslot2][randClassroom2];
-        schedule[randTimeslot2][randClassroom2] = aux;
+    /**
+     * Swap two random Lectures
+     * @param schedule
+     * @return Random neighbor schedule
+     */
+    private int[][] swap(int[][] schedule) {
+        int[][] newSchedule = new int[schedule.length][];
+        for (int i = 0; i < timeslots; i++) {
+            newSchedule[i] = Arrays.copyOf(schedule[i], schedule[i].length);
+        }
+        int randTimeslot1 = ThreadLocalRandom.current().nextInt(timeslots);
+        int randTimeslot2 = ThreadLocalRandom.current().nextInt(timeslots);
+        int randClassroom1 = ThreadLocalRandom.current().nextInt(classrooms);
+        int randClassroom2 = ThreadLocalRandom.current().nextInt(classrooms);
+        int aux = newSchedule[randTimeslot1][randClassroom1];
+        newSchedule[randTimeslot1][randClassroom1] = newSchedule[randTimeslot2][randClassroom2];
+        newSchedule[randTimeslot2][randClassroom2] = aux;
+        return newSchedule;
     }
 }

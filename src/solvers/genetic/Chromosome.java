@@ -19,8 +19,9 @@ import generator.Solution;
  */
 public class Chromosome {
 	private String genes;
-	private double fitnessValue;
+	private int fitnessValue;
 	private Problem problem;
+	private Evaluator evaluator;
 	private Solution solution;
 	private static final Random random = new Random();
 	
@@ -29,12 +30,12 @@ public class Chromosome {
 	 * 
 	 * @param problem problem to solve
 	 */
-	public Chromosome(Problem problem) {
+	public Chromosome(Problem problem, Evaluator evaluator) {
 		int timeslotCount = problem.getTimeslotsCount();
         int classroomCount = problem.getClassroomCount();
         int courseCount = problem.getCourseCount();
         int[][] schedule = new int[timeslotCount][classroomCount];
-        int[] courseLectureCount = problem.getCourses();
+        int[] courseLectureCount = problem.getLecturesPerCourse();
         int[] courseLectureRemaining = Arrays.copyOf(courseLectureCount, courseCount);
         int completedCourseCount = 0;
         boolean complete = false;
@@ -60,6 +61,7 @@ public class Chromosome {
         
         // set attributes
         this.problem = problem;
+        this.evaluator = evaluator;
         this.solution = new Solution(schedule);
         this.genes = toGenes();
         
@@ -76,6 +78,7 @@ public class Chromosome {
 	 */
 	public Chromosome(Chromosome x, Chromosome y) {
 		this.problem = x.problem;
+		this.evaluator = x.evaluator;
 		this.genes = crossover(x, y);
 		this.solution = toSolution();
 		this.repair();
@@ -106,30 +109,8 @@ public class Chromosome {
 	 * 
 	 * @return fitness value
 	 */
-	private double fitness() {
-    	double fitnessValue;
-    	int[][] schedule = solution.getSolution();
-    	int courseCount = problem.getCourseCount();
-    	int[] desiredLectureCount = problem.getCourses();
-    	int[] lectureCount = new int[courseCount];
-
-    	// count lectures
-    	Arrays.stream(schedule)
-    		.flatMapToInt(t -> Arrays.stream(t))
-    		.filter(c -> c > 0)
-    		.forEach(c -> lectureCount[c-1]++);
-    	
-    	// init fitness value so that it is never negative
-    	fitnessValue = 150 * Arrays.stream(desiredLectureCount).sum();
-    	
-    	// number of lectures different from the desired one -> penalty
-    	for (int c=0; c<courseCount; c++)
-    		fitnessValue -= 50 * Math.abs(desiredLectureCount[c] - lectureCount[c]);
-    	
-    	// overlaps -> penalty
-    	fitnessValue -= 2 * Evaluator.countOverlaps(problem, solution);
-    	
-    	return fitnessValue > 0.0 ? fitnessValue : 0.0;
+	private int fitness() {
+    	return evaluator.evaluate(this.solution);
     }
 	
 	/**
@@ -165,7 +146,7 @@ public class Chromosome {
 		int timeslotCount = problem.getTimeslotsCount();
         int classroomCount = problem.getClassroomCount();
         int courseCount = problem.getCourseCount();
-		int[][] schedule = solution.getSolution();
+		int[][] schedule = solution.getSchedule();
 		boolean[] lectureInTimeslot = new boolean[problem.getCourseCount()];
 		
 		// repair
@@ -200,7 +181,7 @@ public class Chromosome {
         int timeslotCount = problem.getTimeslotsCount();
         int classroomCount = problem.getClassroomCount();
         int genesPerCourse = genesPerCourse();
-        int[][] schedule = solution.getSolution();
+        int[][] schedule = solution.getSchedule();
         StringBuffer sb = new StringBuffer();
         
         // from end to start because of the conversion to binary (add in head)
@@ -281,7 +262,7 @@ public class Chromosome {
 		return genes;
 	}
 	
-	public double getFitnessValue() {
+	public int getFitnessValue() {
 		return fitnessValue;
 	}
 	

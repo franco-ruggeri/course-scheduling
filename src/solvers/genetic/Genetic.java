@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import generator.Evaluator;
 import generator.Problem;
 import generator.Solution;
 import solvers.Solver;
@@ -15,11 +16,12 @@ public class Genetic implements Solver {
     private final int populationSize;
     private List<Chromosome> population;
     private double mutationProbability;
-    private final double enoughFitness;
+    private final int enoughFitness;
     private final long maxTime;
     private static final Random random = new Random();
     
-	public Genetic(Problem problem, int populationSize, double mutationProbability, double enoughFitness, long maxTime) {
+	public Genetic(Problem problem, Evaluator evaluator, int populationSize, double mutationProbability,
+			int enoughFitness, long maxTime) {
         this.populationSize = populationSize;
         this.mutationProbability = mutationProbability;
         this.enoughFitness = enoughFitness;
@@ -28,7 +30,7 @@ public class Genetic implements Solver {
         // init population with random states (complete representation, all slots filled)
         population = new LinkedList<>();
         for (int c=0; c<populationSize; c++)
-			population.add(new Chromosome(problem));
+			population.add(new Chromosome(problem, evaluator));
     }
 
 	public Solution solve() {
@@ -78,9 +80,9 @@ public class Genetic implements Solver {
 		 * 3. go through the population summing the fitness values -> partialSum
 		 * 4. stop when partialSum > rand is greater than r
 		 */
-		double sum = population.stream().mapToDouble(Chromosome::getFitnessValue).sum();
-		double rand = random.nextDouble() * sum;
-		double partialSum = 0;
+		int sum = population.stream().mapToInt(Chromosome::getFitnessValue).sum();
+		int rand = random.nextInt(sum);
+		int partialSum = 0;
 		for (Chromosome c : population) {
 			partialSum += c.getFitnessValue();
 			if (partialSum > rand)

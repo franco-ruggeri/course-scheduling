@@ -2,227 +2,227 @@ package generator;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.Map; 
 
+/**
+ * Evaluator of solutions given a problem.
+ */
 public class Evaluator {
-    final static Heuristics CHOSEN = Heuristics.MAXLECTURES;
-
-    enum Heuristics {
-        OVERLAPPING, LESSTIMESLOTS, MAXLECTURES, FITNESS_FUNCTION
+	private Problem problem;
+	
+	// total number of desired lectures (i.e. sum of lectures for courses)
+	private int totalLectures;
+	
+	// total number of lectures enrolled by students (e.g. 3 students follow the same lectures => 3) 
+	private int totalEnrolledLectures;
+	
+    public Evaluator(Problem problem) {
+    	this.problem = problem;
+    	this.totalLectures = countLectures();
+    	this.totalEnrolledLectures = countEnrolledLectures();
     }
-    // OVERLAPPING: sum of lectures that students can attend.
-    // LESSTIMESLOTS: example of potential heurisic modifier
-    // MAXLECTURES: total of lectures been taken
-    // GA: heuristic ad hoc for genetic algorithm
-    // maximizing
+    
+    /**
+	 * Calculates the goodness of a solution.
+	 * 
+	 * @param solution solution to evaluate
+	 * @return goodness of the solution
+	 */
+    public int evaluate(Solution solution) {
+    	int total = 0;
+    	int courseCount = problem.getCourseCount();
+    	int[] desiredLecturesPerCourse = problem.getLecturesPerCourse();
+    	int[] scheduledLecturesPerCourse = countScheduledLecturesPerCourse(solution);
 
-    // returns what aiming to minimize; e.g. Overlapping would return one (0x1 <<
-    // 0), Lesstimeslots would return (0x1 << 1)
-    static int getGoals() {
-        return 0;
-    }
-
-    public static int evaluate(final Problem p, final Solution s) {
-        switch (CHOSEN) {
-        case OVERLAPPING:
-            return minOverlaps(p, s);
-        // case LESSTIMESLOTS:
-        // return minTimeslots(p,s);
-        case MAXLECTURES:
-            return maxLectures(p, s);
-        default:
-            return 0;
-        }
-    }
-
-    static int maxLectures(final Problem p, final Solution s) {
-        int sum = 0;
-        // schedule found
-        int[][] schedule = s.getSolution();
-        // the different sets of courses the students take
-        Set<List<Integer>> groups = p.getGroups();
-        // System.err.println(groups);
-        // the number of students that take each set of courses
-        Map<List<Integer>, Integer> groupsCount = p.getGroupsCount();
-        int[] coursesCount = p.getCourses();
-        // System.err.println(groupsCount);
-        // System.err.println(groupsCount);
-        // for each timeslot in the schedule
-        for (int[] timeslot : schedule) {
-            // againts each gruop
-            for (List<Integer> group : groups) {
-                int overlaps = 0;
-                // for every course given in the current timeslot
-                for (int course : timeslot) {
-                    // if the course is part of the group we increase overlaps
-                    if (group.contains(course)) {
-                        overlaps++;
-                    }
-                }
-                // if there are no overlaps we add the number of student in the group to the
-                // final result
-                if (overlaps >= 1) {
-                    sum += groupsCount.get(group);
-                }
-            }
-        }
-        // return sum;
-        int total = 0;
-        for (List<Integer> group : groups) {
-            for (int courseCode : group) {
-                total += groupsCount.get(group) * coursesCount[courseCode - 1];
-            }
-        }
-        double optimal = Math.pow(((double) sum / (double) total), 2);
-        return (int) ((optimal > .1) ? sum * optimal : sum);
+    	// add number of taken lectures by each student
+        total += countTakenLectures(solution);
+        
+        // penalty for infeasible lectures (i.e. more than one lectures of the same course in the same time slot)
+        total -= countInfeasibleLectures(solution);
+        
+        // penalty if a course does not have the desired number of lectures
+        for (int c=0; c<courseCount; c++)
+        	total -= Math.abs(desiredLecturesPerCourse[c] - scheduledLecturesPerCourse[c]);
+        
+        return total;
     }
 
-    static int minOverlaps(final Problem p, final Solution s) {
-        int sum = 0;
-        // schedule found
-        int[][] schedule = s.getSolution();
-        // the different sets of courses the students take
-        Set<List<Integer>> groups = p.getGroups();
-        // the number of students that take each set of courses
-        Map<List<Integer>, Integer> groupsCount = p.getGroupsCount();
-        int[] coursesCount = p.getCourses();
-        // for each timeslot in the schedule
-        for (int[] timeslot : schedule) {
-            // againts each gruop
-            for (List<Integer> group : groups) {
-                int overlaps = 0;
-                // for every course given in the current timeslot
-                for (int course : timeslot) {
-                    // if the course is part of the group we increase overlaps
-                    if (group.contains(course)) {
-                        overlaps++;
-                    }
-                }
-                // if there is any overlap
-                if (overlaps > 1) {
-                    // we add the number of students in the group times the number of overlaps to
-                    // the final result
-                    sum += (overlaps - 1) * groupsCount.get(group);
-                }
-            }
-        }
-        int total = 0;
-        for (List<Integer> group : groups) {
-            for (int courseCode : group) {
-                total += groupsCount.get(group) * coursesCount[courseCode - 1];
-            }
-        }
-        double optimal = Math.pow(((double) sum / (double) total), 2);
-        return (int) (sum * optimal);
+	/**
+     * Calculates the percentage of infeasible lectures.
+     * # infeasible lectures / # lectures * 100
+     *  
+     * @param solution solution
+     * @return percentage of infeasible lectures
+     */
+    public double percentageInfeasibleLectures(Solution solution) {
+    	return countInfeasibleLectures(solution) / (double) totalLectures * 100.0;
+    }
+    
+    /**
+     * Calculates the percentage of overlaps.
+     * # overlaps / # enrolled lectures * 100
+     * 
+     * @param solution solution
+     * @return percentage of overlaps
+     */
+    public double percentageOverlaps(Solution solution) {
+    	return countOverlaps(solution) / (double) totalEnrolledLectures * 100.0;
     }
 
-    public static boolean isValid(final Problem p, final Solution s) {
-        int timeslots = p.getTimeslotsCount();
-        int cl = p.getClassroomCount();
-        int[][] schedule = s.getSolution();
-        int courseCount = p.getCourseCount();
-        int[] lectures = new int[courseCount + 1];
-        int[] courses = p.getCourses();
+    /**
+     * Calculates the percentage of correctly scheduled lectures.
+     * (# schedule lectures - # infeasible lectures) / # lectures * 100
+     *  
+     * @param solution solution
+     * @return percentage of correctly scheduled lectures
+     */
+	public double percentageScheduledLectures(Solution solution) {
+		return (countScheduledLectures(solution) - countInfeasibleLectures(solution)) / (double) totalLectures * 100.0;
+	}
+	
+	/**
+	 * Checks if a solution respects the additional constraint: a course cannot have
+	 * more than one lectures in the same time slot.
+	 * 
+	 * @param s solution to validate
+	 * @return true if the solution respects the constraint
+	 */
+	public boolean checkFeasibleLectures(Solution s) {
+		int timeslots = problem.getTimeslotsCount();
+        int cl = problem.getClassroomCount();
+        int[][] schedule = s.getSchedule();
+        int courseCount = problem.getCourseCount();
+		
         for (int i = 0; i < timeslots; i++) {
-            for (int course : courses) {
-                int ocurrance = 0;
+            for (int course = 1; course <= courseCount; course++) {
+                boolean ocurrance = false;
                 for (int j = 0; j < cl; j++) {
                     if (course == schedule[i][j]) {
-                        ocurrance++;
+                        if (ocurrance)
+                            return false;
+                        ocurrance = true;
                     }
-                    lectures[schedule[i][j]]++;
                 }
-                if (ocurrance > 1)
-                    return false;
             }
         }
+        return true;
+	}
+	
+	
+	/**
+	 * Checks if a solution respects the additional constraint: a course must have
+	 * an adequate number of lectures (i.e. equal to the desired one).
+	 * 
+	 * @param s solution to validate
+	 * @return true if the solution respects the constraint
+	 */
+    public boolean checkNumberOfLectures(Solution s) {
+        int courseCount = problem.getCourseCount();
+        int[] lectures = countScheduledLecturesPerCourse(s);
+        int[] courses = problem.getLecturesPerCourse();
+        
+        // we verify that the number of lectures per course is equal
+        // to the established in the problem
         for (int c = 1; c < courseCount; c++) {
-            if (courses[c - 1] != lectures[c])
+            // if not we return false
+            if (courses[c] != lectures[c])
                 return false;
         }
         return true;
     }
-
-    public static int countDesiredLectures(final Problem p) {
-    	return Arrays.stream(p.getCourses()).sum();
-    }
     
-    public static int countScheduledLectures(final Problem p, final Solution s) {
-    	return (int) Arrays.stream(s.getSolution())
-    			.flatMapToInt(a -> Arrays.stream(a))
-    			.filter(c -> c > 0)
-    			.count();
-    }
-    
-    public static int countTakenLectures(final Problem p, final Solution s) {
-        int sum = 0;
-        // schedule found
-        int[][] schedule = s.getSolution();
-        // the different sets of courses the students take
-        Set<List<Integer>> groups = p.getGroups();
-        // the number of students that take each set of courses
-        Map<List<Integer>, Integer> groupsCount = p.getGroupsCount();
-        for (int[] timeslot : schedule) {
-            // againts each gruop
-            for (List<Integer> group : groups) {
-                int overlaps = 0;
-                // for every course given in the current timeslot
-                for (int course : timeslot) {
-                    // if the course is part of the group we increase overlaps
-                    if (group.contains(course)) {
-                        overlaps++;
-                    }
-                }
-                // if there are no overlaps we add the number of student in the group to the
-                // final result
-                if (overlaps >= 1) {
-                    sum += groupsCount.get(group);
-                }
-            }
-        }
-        return sum;
-    }
-    
-    public static int countEnrolledLectures(final Problem p) {
-    	int[] coursesCount = p.getCourses();
-    	int total = 0;
-	    Map<List<Integer>, Integer> groups = p.getGroupsCount();
-	    for (List<Integer> group : p.getGroups()) {
-	        for (int courseCode : group) {
-	            total += groups.get(group) * coursesCount[courseCode - 1];
-	        }
-	    }
-	    return total;
-    }
-
-	public static int countOverlaps(Problem problem, Solution solution) {
-    	Map<List<Integer>, Integer> studentGroups = problem.getGroupsCount();
-    	int total = 0;
-    	
-    	for (int[] timeslot : solution.getSolution()) {
-            for (Map.Entry<List<Integer>, Integer> e : studentGroups.entrySet()) {
-            	List<Integer> courses = e.getKey();
-            	int nStudents = e.getValue(); 
-                int overlaps = -1;	// -1 so that 1 lecture is not considered overlap
-                
-                for (int course : timeslot)
-                    if (courses.contains(course))
-                        overlaps++;
-                
-                if (overlaps > 0)
-                	total += overlaps * nStudents;
-            }
-        }
-    	
-    	return total;
+    /**
+     * Calculates the sum of overlaps for the students.
+     * 
+     * @param solution solution
+     * @return sum of overlaps for the students
+     */
+	private int countOverlaps(Solution solution) {
+		return totalEnrolledLectures - countTakenLectures(solution);
 	}
+
+    /**
+     * Calculates the total number of lectures in a problem.
+     * 
+     * @return total number of lectures in the problem
+     */
+    private int countLectures() {
+        return Arrays.stream(problem.getLecturesPerCourse()).sum();
+    }
+    
+    /**
+     * Calculates the sum of lectures that the students should be able to take.
+     * 
+     * @return sum of lectures that the students should be able to take
+     */
+    private int countEnrolledLectures() {
+    	int total = 0;
+        int[] lecturesPerCourse = problem.getLecturesPerCourse();
+        Map<List<Integer>, Integer> studentGroups = problem.getStudentGroups();
+        
+    	for (Map.Entry<List<Integer>, Integer> e : studentGroups.entrySet()) {
+        	List<Integer> studentGroupCourses = e.getKey();
+        	int studentGroupSize = e.getValue();
+        	
+            for (int course : studentGroupCourses)
+            	total += studentGroupSize * lecturesPerCourse[course-1];
+        }
+    	
+        return total;
+    }
+
+    /**
+     * Calculates the total number of lectures scheduled in the solution.
+     * 
+     * @param solution solution
+     * @return total number of lectures scheduled in the solution
+     */
+    private int countScheduledLectures(Solution solution) {
+        return (int) Arrays.stream(solution.getSchedule())
+        		.flatMapToInt(a -> Arrays.stream(a))
+        		.filter(c -> c > 0)		// 0 means no course
+        		.count();
+    }
+
+    /**
+     * Calculates the sum of lectures that the students can take given the solution.
+     * 
+     * @param solution Solution
+     * @return sum of lectures that each the students can take given the solution
+     */
+    private int countTakenLectures(Solution solution) {
+        int total = 0;
+        Map<List<Integer>, Integer> studentGroups = problem.getStudentGroups();
+        
+        for (int[] timeslot : solution.getSchedule()) {
+        	for (Map.Entry<List<Integer>, Integer> e : studentGroups.entrySet()) {
+            	List<Integer> studentGroupCourses = e.getKey();
+            	int studentGroupSize = e.getValue();
+                
+                for (int course : timeslot) {
+                	if (studentGroupCourses.contains(course)) {
+                		total += studentGroupSize;
+                		break;	// next group, this group cannot take other lectures
+                	}
+                }
+            }
+        }
+
+		return total;
+    }
 	
-	public static int countUnfeasibleLectures(Problem problem, Solution solution) {
+	/**
+	 * Calculates the sum of infeasible lectures. A lecture is infeasible if there
+	 * is already one lecture of the same course in the same time slot.
+	 * 
+	 * @param solution solution
+	 * @return sum of infeasible lectures
+	 */
+	private int countInfeasibleLectures(Solution solution) {
 		int total = 0;
 		boolean[] lectureInTimeslot = new boolean[problem.getCourseCount()];
 		
-		for (int[] timeslot : solution.getSolution()) {
+		for (int[] timeslot : solution.getSchedule()) {
 			Arrays.fill(lectureInTimeslot, false);
 			for (int course : timeslot) {
 				if (course > 0) {
@@ -235,6 +235,23 @@ public class Evaluator {
 		}
 		
 		return total;
+	}
+	
+	/**
+	 * Counts the number of scheduled lectures for each course.
+	 * 
+	 * @param solution solution
+	 * @return array of counts
+	 */
+	private int[] countScheduledLecturesPerCourse(Solution solution) {
+    	int[] scheduledLecturesPerCourse = new int[problem.getCourseCount()];
+    	
+    	Arrays.stream(solution.getSchedule())
+    		.flatMapToInt(t -> Arrays.stream(t))
+    		.filter(c -> c > 0)
+    		.forEach(c -> scheduledLecturesPerCourse[c-1]++);
+    	
+    	return scheduledLecturesPerCourse;
 	}
 	
 }
