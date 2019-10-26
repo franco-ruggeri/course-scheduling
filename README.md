@@ -1,46 +1,49 @@
 # AI.A3.PR
-Group 10.
 
-The source code may be found int the src folder.
-## Generator
-The code for the Generator may be found in the src/generator folder/package.
+## General info
+Authors:
+* Dingli Mao
+* Arturo Rivas Rojas
+* Franco Ruggeri
+* Ryan Yared
 
-### Generator object
-In order to create a new Generator, the parameters of the Problem you want to generatre must be set into the the 
-constructor and 2d integers to change the ranges of the parameters.
-A static method may be found in Generator [Generator.predefined()] where parameters may easily be modified that returns a new Generator.
+## Structure of the code
+Packages:
+* default package: contains the Main class to run the test cases
+* generator: contains general classes useful to generate the code and evaluate the solutions
+* solvers: contains the implementation of the algorithms
 
-In order to get a Problem [Problem.java] made from the Generator using the parameters set when first constructing the generator, the <Generator>.generate() function is used. 
-The testing was done using the main function that can be found in Generator.java
+## How to run test cases
+* Import the project into an IDE (e.g. Eclipse, IntelliJ)
+* Add the external jars in *src/solvers/lp/* to the build path (from: SCPSolver; http://scpsolver.org/)
+* Run the Main class
+   
+Adding external jars to intellij: https://stackoverflow.com/questions/1051640/correct-way-to-add-external-jars-lib-jar-to-an-intellij-idea-project
+If having the undefined symbol problem on ubuntu: https://github.com/draeger-lab/SBSCL/issues/5 [libglpkjni_x64 file can be found alongside the jars]
 
-### Saving and loading
-Static saving and loading methods for both Problem and Solution may be found in Main.java
+## Output
+The problems and the solutions will be generated into a subfolder called *output*.
 
-## Solvers
-The code for each of the solvers may be found in their respective directories/package.
-For each of the solvers, the solver parameters and a Problem must be inputted in the constructor.
-use <Solver>.solve() to solve a Problem, a Solution [Solution.java] object will be returned.
+## Customized run
 
- * Simulated Annealing: annealing
- 
-   Parameters:
-   * Temperature
-   * Cooling rate
+### Generate a new problem
+In order to create a new problem, you need a Generator. The Generator accepts a range of parameters and creates a valid problem choosing random numbers within those ranges. This can be done using the method *generate()*.
+
+The suggested way is to modify the code in the *Main* class.
+
+### Run a solver
+All the algorithms implement the *Solver* interface, that declares just one method: *solve()*. To run a new Solver, just create a new object among the available algorithms and use that method. The algorithms have a set of parameters that can be passed to the constructor.
+
+ * Simulated Annealing:
+   + Temperature
+   + Cooling rate
   
- * Genetic Algorithm: genetic
+ * Genetic Algorithm:
+   + Population size
+   + Mutation probability
+   + Fitness value that stops the algorithm
+   + Maximum time in ms
  
-   Parameters:
-   * Population size
-   * Mutation probability
-   * Fitness value that stops the algorithm
-   * Maximum time in ms
- 
- * Linear Programming: lp
- 
-   No parameters, the Problem object is enough.
-   
-   In order to run LP, the external jars (from: SCPSolver; http://scpsolver.org/) need to be added to the project. They can be found (online and) in src/solvers/lp/ .
-   
-   Adding external jars to intellij: https://stackoverflow.com/questions/1051640/correct-way-to-add-external-jars-lib-jar-to-an-intellij-idea-project
-   If having the undefined symbol problem on ubuntu: https://github.com/draeger-lab/SBSCL/issues/5 [libglpkjni_x64 file can be found alongside the jars]
+ * Linear Programming:
+   + No parameters, the Problem object is enough.
    
