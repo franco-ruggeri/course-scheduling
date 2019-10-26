@@ -56,12 +56,12 @@ public class Genetic implements Solver {
 	    	// update population
 	    	population = newPopulation;
 	    	
-			// get best individual
+			// get best chromosome
 			double aux = population.stream().mapToDouble(Chromosome::getFitnessValue).max().getAsDouble();
 	    	bestChromosome = population.stream().filter(i -> i.getFitnessValue() == aux).findFirst().get();
 	    	maxFitnessValue = aux;	// aux is used because closures require effective final variables
 	    	
-	    	// terminate when time runs out or when a good-enough individual has been found
+	    	// terminate when time runs out or when a good-enough chromosome has been found
 	    	remainingTime = System.currentTimeMillis() - startTime;
 //	    	System.err.println("Remaining time: " + remainingTime);
 //	    	System.err.println("Best fitness value: " + maxFitnessValue);

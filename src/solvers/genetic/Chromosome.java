@@ -8,7 +8,14 @@ import generator.Problem;
 import generator.Solution;
 
 /**
- * Represents a chromosome of the population for GA.
+ * Represents a chromosome of the population for GA. The correspondent solution
+ * is a valid schedule, i.e. there is at most 1 lecture per course in the same
+ * time slot. However, a right number of lectures for the courses is not
+ * guaranteed.
+ * 
+ * Notice, once again, that here 'valid' means that one course cannot have more
+ * than one lecture in the same time slot, i.e. there cannot be infeasible
+ * lectures.
  */
 public class Chromosome {
 	private String genes;
@@ -18,9 +25,9 @@ public class Chromosome {
 	private static final Random random = new Random();
 	
 	/**
-	 * Constructs an chromosome with random (but valid) genes.
+	 * Constructs a chromosome with random but valid genes.
 	 * 
-	 * @param problem
+	 * @param problem problem to solve
 	 */
 	public Chromosome(Problem problem) {
 		int timeslotCount = problem.getTimeslotsCount();
@@ -32,6 +39,7 @@ public class Chromosome {
         int completedCourseCount = 0;
         boolean complete = false;
         
+        // generate random schedule
         for (int t = 0; t < timeslotCount && !complete; t++) {
             for (int cl = 0; cl < classroomCount && !complete; cl++) {
             	boolean found = false;
@@ -50,28 +58,32 @@ public class Chromosome {
             }
         }
         
+        // set attributes
         this.problem = problem;
         this.solution = new Solution(schedule);
         this.genes = toGenes();
-        this.genes = repair(this.problem, this.solution);
-        this.refresh();
+        
+        // make it valid
+        this.repair();
 	}
 	
 	/**
-	 * Constructs a chromosome as offspring of two chromosomes.
+	 * Constructs a chromosome as offspring of two chromosomes. The offspring is
+	 * then repaired in order to be valid.
 	 * 
-	 * @param x
-	 * @param y
+	 * @param x parent 1
+	 * @param y parent 2
 	 */
 	public Chromosome(Chromosome x, Chromosome y) {
 		this.problem = x.problem;
 		this.genes = crossover(x, y);
 		this.solution = toSolution();
-		this.refresh();
+		this.repair();
 	}
 	
 	/**
-	 * Mutates one gene of the chromosome.
+	 * Mutates one gene of the chromosome. After the mutation, the chromosome is
+	 * repaired in order to be valid.
 	 */
 	public void mutate() {
 		int n = genes.length();
@@ -79,10 +91,21 @@ public class Chromosome {
 		char g = genes.charAt(m) == '0' ? '1' : '0';	// mutated gene
 		this.genes = genes.substring(0, m) + g + genes.substring(m+1, n);
 		this.solution = toSolution();
-		this.genes = repair(this.problem, this.solution);
-		this.refresh();
+		this.repair();
 	}
 	
+	/**
+	 * Compute the fitness value of the chromosome.
+	 * 
+	 * It considers the following factors:
+	 * - number of lectures for the courses similar to the desired ones.
+	 * - number of overlaps for students.
+	 * 
+	 * Notice that the fitness value must not be negative for a correct selection in
+	 * GA.
+	 * 
+	 * @return fitness value
+	 */
 	private double fitness() {
     	double fitnessValue;
     	int[][] schedule = solution.getSolution();
@@ -109,6 +132,13 @@ public class Chromosome {
     	return fitnessValue > 0.0 ? fitnessValue : 0.0;
     }
 	
+	/**
+	 * Combine two chromosomes to generate the genes of the offspring.
+	 * 
+	 * @param x parent 1
+	 * @param y parent 2
+	 * @return sequence of genes of the offspring
+	 */
 	private String crossover(Chromosome x, Chromosome y) {
 		int n = x.genes.length();
 		int genesPerTimeslot = problem.getClassroomCount() * genesPerCourse();
@@ -127,26 +157,25 @@ public class Chromosome {
 	}
 	
 	/**
-	 * Repairs the chromosome after the mutation, in order to make it valid.
-	 * 
-	 * @param problem
-	 * @param solution
-	 * @return
+	 * Repairs the chromosome, in order to make it valid. This is achieved by
+	 * canceling invalid lectures. A lecture is invalid if there is already another
+	 * lecture of the same course in the same time slot.
 	 */
-	private String repair(Problem problem, Solution solution) {
+	private void repair() {
 		int timeslotCount = problem.getTimeslotsCount();
         int classroomCount = problem.getClassroomCount();
         int courseCount = problem.getCourseCount();
 		int[][] schedule = solution.getSolution();
 		boolean[] lectureInTimeslot = new boolean[problem.getCourseCount()];
 		
+		// repair
 		for (int t=0; t<timeslotCount; t++) {
 			for (int cl=0; cl<classroomCount; cl++) {
 				// mutation can cause an invalid course ID
 				if (schedule[t][cl] > courseCount) {
 					schedule[t][cl] = 0;
 				} else if (schedule[t][cl] > 0) {
-					// cancel if there is already one in this time slot for this course
+					// cancel lecture if there is already one in this time slot for this course
 					if (lectureInTimeslot[schedule[t][cl] - 1])
 						schedule[t][cl] = 0;
 					else
@@ -156,32 +185,17 @@ public class Chromosome {
 			Arrays.fill(lectureInTimeslot, false);
 		}
 		
+		// refresh
 		this.solution = new Solution(schedule);
-		return this.toGenes();
+		this.genes = toGenes();
+		this.fitnessValue = fitness();
 	}
-	
-	private Solution toSolution() {
-		int timeslotCount = problem.getTimeslotsCount();
-        int classroomCount = problem.getClassroomCount();
-        int genesPerCourse = genesPerCourse();
-        int[][] schedule = new int[timeslotCount][classroomCount];
-        
-        for (int t=0; t<timeslotCount; t++) {
-        	for (int cl=0; cl<classroomCount; cl++) {
-        		int course = 0;
-        		int baseIndex = (t * classroomCount + cl) * genesPerCourse;
-        		
-        		// translate binary string to integer
-        		for (int g=0; g<genesPerCourse; g++)
-        			course = course*2 + (genes.charAt(baseIndex + g) == '0' ? 0 : 1);
-        		
-        		schedule[t][cl] = course;
-        	}
-        }
-        
-        return new Solution(schedule);
-	}
-	
+
+	/**
+	 * Converts the solution in a sequence of genes.
+	 * 
+	 * @return the sequence of genes
+	 */
 	private String toGenes() {
         int timeslotCount = problem.getTimeslotsCount();
         int classroomCount = problem.getClassroomCount();
@@ -213,6 +227,38 @@ public class Chromosome {
 		return sb.toString();
 	}
 	
+	/**
+	 * Converts the sequence of genes in a solution.
+	 * 
+	 * @return the solution
+	 */
+	private Solution toSolution() {
+		int timeslotCount = problem.getTimeslotsCount();
+        int classroomCount = problem.getClassroomCount();
+        int genesPerCourse = genesPerCourse();
+        int[][] schedule = new int[timeslotCount][classroomCount];
+        
+        for (int t=0; t<timeslotCount; t++) {
+        	for (int cl=0; cl<classroomCount; cl++) {
+        		int course = 0;
+        		int baseIndex = (t * classroomCount + cl) * genesPerCourse;
+        		
+        		// translate binary string to integer
+        		for (int g=0; g<genesPerCourse; g++)
+        			course = course*2 + (genes.charAt(baseIndex + g) == '0' ? 0 : 1);
+        		
+        		schedule[t][cl] = course;
+        	}
+        }
+        
+        return new Solution(schedule);
+	}
+	
+	/**
+	 * Computes the minimum number of genes to represent a course.
+	 * 
+	 * @return number of genes per course
+	 */
 	private int genesPerCourse() {
 		int courseCount = problem.getCourseCount();
 		int genesPerCourse;
@@ -226,10 +272,10 @@ public class Chromosome {
         return genesPerCourse;
 	}
 	
-	private void refresh() {
-		this.solution = toSolution();
-		this.fitnessValue = fitness();
-	}
+	
+	/*
+	 * Getters and setters
+	 */
 	
 	public String getGenes() {
 		return genes;
@@ -237,10 +283,6 @@ public class Chromosome {
 	
 	public double getFitnessValue() {
 		return fitnessValue;
-	}
-
-	public void setFitnessValue(double fitnessValue) {
-		this.fitnessValue = fitnessValue;
 	}
 	
 	public Solution getSolution() {

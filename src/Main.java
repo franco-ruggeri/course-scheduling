@@ -13,6 +13,9 @@ import solvers.annealing.Annealing;
 import solvers.genetic.Genetic;
 //import solvers.lp.ILP;
 
+/**
+ * Main class to run test cases and compare algorithms.
+ */
 public class Main {
 
     public static void main(String[] args) {
@@ -128,13 +131,6 @@ public class Main {
         final int len2 = a[0].length;
         String ans = "Day/Classroom,Hour";
         final String[] week = {"Monday","Tuesday", "Wednesday", "Thursday", "Friday"};
-        // String ans = len + "\t" + len2 + "\n";
-        // for (int i = 0; i < len; i++) {
-        //     for (int j = 0; j < len2; j++) {
-        //         ans += a[i][j] + ",";
-        //     }
-        //     ans += "\n";
-        // }
         for (int cl = 0; cl < len2; cl++) {
             ans += "," + (cl+1);
         }
