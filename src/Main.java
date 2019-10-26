@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,6 +69,8 @@ public class Main {
 	}
 	
     public static void main(String[] args) {
+    	
+    	new File("output/").mkdir();
     	
     	for (int i=0; i<generators.length; i++) {
     		Map<String, Performance> performance = new HashMap<>();
