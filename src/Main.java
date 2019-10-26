@@ -9,7 +9,7 @@ import generator.Solution;
 import solvers.Solver;
 import solvers.annealing.Annealing;
 import solvers.genetic.Genetic;
-//import solvers.lp.ILP;
+import solvers.lp.ILP;
 
 /**
  * Main class to run test cases and compare algorithms
@@ -79,22 +79,26 @@ public class Main {
     			// generate problem
             	System.out.println("Generating problem...");
                 Problem problem = generators[i].generate();
-                saveProblem(problem, "problem_" + i + "_" + j + ".txt");
+                saveProblem(problem, "output/problem_" + i + "_" + j + ".txt");
                 System.out.println("Problem generated and saved");
                 Evaluator evaluator = new Evaluator(problem);
                 
                 // create solvers
                 performance.get("Simulated Annealing").solver = new Annealing(10000000, .01, problem, evaluator);
-                performance.get("Genetic Algorithm").solver = new Genetic(problem, evaluator, 100, 0.05, Integer.MAX_VALUE, 60000);;
+                performance.get("Genetic Algorithm").solver = new Genetic(problem, evaluator, 100, 0.05, Integer.MAX_VALUE, 10000);;
 //                performance.get("Genetic Algorithm").solver = new ILP(problem);
                 
                 // solve and fill performance
                 System.out.println("Solving...");
                 for (Performance p : performance.values()) {
+                	if (p.solver == null)
+                		continue;
+                	
                 	// solve
                     long start = System.currentTimeMillis();
                     Solution solution = p.solver.solve();
-                    saveSolution(solution, problem, "solution_" + p.solver.getClass().getSimpleName().toLowerCase().replaceAll(" ", "_") + "_" + i + "_" + j + ".csv");
+                    System.out.println("Solution found");
+                    saveSolution(solution, problem, "output/solution_" + p.solver.getClass().getSimpleName().toLowerCase().replaceAll(" ", "_") + "_" + i + "_" + j + ".csv");
                     long end = System.currentTimeMillis();
                     
                     // update performance
@@ -121,6 +125,7 @@ public class Main {
                 System.out.println("Percentage overlaps: " + p.percentageOverlaps / TEST_CASES);
                 System.out.println("Adequate number of lectures: " + p.adequateNumberOfLectures + " out of " + TEST_CASES);
     		});
+    		System.out.println();
     	}
     }
 
@@ -140,7 +145,7 @@ public class Main {
             PrintWriter writer = new PrintWriter(loc, "UTF-8");
             writer.println("students, courses, timeslots, classrooms");
             writer.println(p.getStudentCount() + " " + p.getCourseCount() + " " + p.getTimeslotsCount() + " "
-                    + p.getClassroomCount());
+                    + p.getClassroomCount() + "\n");
             writer.println("courses by student");
             writer.println(intArrayToString(p.getStudents()));
             writer.println("lessons by course");
@@ -153,7 +158,7 @@ public class Main {
 
     private static String intArrayToString(final int[][] a) {
         final int len = a.length;
-        String ans = len + "\n";
+        String ans = "";
         for (int i = 0; i < len; i++) {
             int len2 = a[i].length;
             for (int j = 0; j < len2; j++) {

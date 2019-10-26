@@ -4,6 +4,7 @@
 .classpath
 .project
 /bin/
+/output/
 *.txt
 *.csv
 .classpath

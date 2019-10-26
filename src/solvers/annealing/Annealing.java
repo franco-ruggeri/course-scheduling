@@ -122,11 +122,13 @@ public class Annealing implements Solver {
                             coursesMap.remove(randCourse);
                     }
                     if (coursesMap.isEmpty())
-                        break;
+                        return schedule;
                 }
             }
-            
             s = new Solution(schedule);
+            System.out.println(s);
+            System.out.println();
+            System.exit(-1);
         } while (!e.checkFeasibleLectures(s) || !e.checkNumberOfLectures(s));
         
         return schedule;

@@ -37,7 +37,7 @@ public class Genetic implements Solver {
 		Chromosome bestChromosome = null;
 		double maxFitnessValue;
 		long startTime = System.currentTimeMillis();
-		long remainingTime;
+		long elapsedTime;
 		
     	do {
     		// evolution
@@ -64,10 +64,10 @@ public class Genetic implements Solver {
 	    	maxFitnessValue = aux;	// aux is used because closures require effective final variables
 	    	
 	    	// terminate when time runs out or when a good-enough chromosome has been found
-	    	remainingTime = System.currentTimeMillis() - startTime;
-//	    	System.err.println("Remaining time: " + remainingTime);
-//	    	System.err.println("Best fitness value: " + maxFitnessValue);
-		} while (remainingTime < maxTime && maxFitnessValue < enoughFitness);
+	    	elapsedTime = System.currentTimeMillis() - startTime;
+	    	System.err.println("Elapsed time: " + elapsedTime);
+	    	System.err.println("Best fitness value: " + maxFitnessValue);
+		} while (elapsedTime < maxTime && maxFitnessValue < enoughFitness);
     	
 	    return bestChromosome.getSolution();
     }

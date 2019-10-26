@@ -42,7 +42,7 @@ public class Generator {
             generateCoursePerStudents(p.getStudents(), p.getCourseCount());
             generateNumOfLecturesPerCourses(p.getLecturesPerCourse());
             generateGroups(p.getStudentGroups(), p.getStudents());
-        } while (p.isValid());
+        } while (!p.isValid());
         return p;
     }
 
