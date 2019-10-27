@@ -149,6 +149,8 @@ public class Main {
     		for (Map.Entry<String, Performance> e : performance.entrySet()) {
     			String solverName = e.getKey();
     			Performance p = e.getValue();
+    			if (p.solver == null)
+    				continue;
 
                 writer.println("Solver: " + solverName);
                 writer.println("Time: " + p.time / (TEST_CASES*1000) + " seconds");

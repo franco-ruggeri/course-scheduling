@@ -108,7 +108,6 @@ public class Evaluator {
         return true;
 	}
 	
-	
 	/**
 	 * Checks if a solution respects the additional constraint: a course must have
 	 * an adequate number of lectures (i.e. equal to the desired one).
