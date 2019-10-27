@@ -66,6 +66,8 @@ public class Evaluator {
      * @return percentage of overlaps
      */
     public double percentageOverlaps(Solution solution) {
+    	if (countOverlaps(solution) / (double) totalEnrolledLectures * 100.0 < 0)
+    		System.err.println(countOverlaps(solution) + ", " + totalEnrolledLectures);
     	return countOverlaps(solution) / (double) totalEnrolledLectures * 100.0;
     }
 
@@ -81,54 +83,25 @@ public class Evaluator {
 	}
 	
 	/**
-	 * Checks if a solution respects the additional constraint: a course cannot have
-	 * more than one lectures in the same time slot.
+	 * Calculates the percentage of courses with a number of scheduled lectures
+	 * equal to the desired one.
 	 * 
-	 * @param s solution to validate
-	 * @return true if the solution respects the constraint
+	 * @param solution solution
+	 * @return percentage of courses with a number of scheduled lectures equal to
+	 *         the desired one
 	 */
-	public boolean checkFeasibleLectures(Solution s) {
-		int timeslots = problem.getTimeslotsCount();
-        int cl = problem.getClassroomCount();
-        int[][] schedule = s.getSchedule();
-        int courseCount = problem.getCourseCount();
+	public double percentageCoursesWithRightNumberOfLectures(Solution solution) {
+		int courseOk = 0;
+		int courseCount = problem.getCourseCount();
+		int[] desiredLecturesPerCourse = problem.getLecturesPerCourse();
+    	int[] scheduledLecturesPerCourse = countScheduledLecturesPerCourse(solution);
+    	
+    	for (int c=0; c<courseCount; c++)
+    		if (scheduledLecturesPerCourse[c] == desiredLecturesPerCourse[c])
+    			courseOk++;
 		
-        for (int i = 0; i < timeslots; i++) {
-            for (int course = 1; course <= courseCount; course++) {
-                boolean ocurrance = false;
-                for (int j = 0; j < cl; j++) {
-                    if (course == schedule[i][j]) {
-                        if (ocurrance)
-                            return false;
-                        ocurrance = true;
-                    }
-                }
-            }
-        }
-        return true;
+		return courseOk / (double) courseCount * 100.0;
 	}
-	
-	/**
-	 * Checks if a solution respects the additional constraint: a course must have
-	 * an adequate number of lectures (i.e. equal to the desired one).
-	 * 
-	 * @param s solution to validate
-	 * @return true if the solution respects the constraint
-	 */
-    public boolean checkNumberOfLectures(Solution s) {
-        int courseCount = problem.getCourseCount();
-        int[] lectures = countScheduledLecturesPerCourse(s);
-        int[] courses = problem.getLecturesPerCourse();
-        
-        // we verify that the number of lectures per course is equal
-        // to the established in the problem
-        for (int c = 1; c < courseCount; c++) {
-            // if not we return false
-            if (courses[c] != lectures[c])
-                return false;
-        }
-        return true;
-    }
     
     /**
      * Calculates the sum of overlaps for the students.

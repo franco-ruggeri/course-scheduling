@@ -93,43 +93,34 @@ public class Annealing implements Solver {
      * @return valid schedule
      */
     private int[][] init() {
-        int[][] schedule;
-        Solution s = null;
-        
-        do {
-            schedule = new int[timeslots][classrooms];
-            int aux = 0;
-            int randCourse = 0;
-            Map<Integer, Integer> coursesMap = new HashMap<Integer, Integer>();
-            for (int i = 1; i <= courses; i++) {
-                coursesMap.put(i, coursesCount[i - 1]);
-            }
-            for (int t = 0; t < timeslots; t++) {
-                for (int cl = 0; cl < classrooms; cl++) {
-                    aux = 0;
-                    while (aux == 0) {
-                        randCourse = ThreadLocalRandom.current().nextInt(courses) + 1;
-                        aux = coursesMap.getOrDefault(randCourse, 0);
-                    }
-                    schedule[t][cl] = randCourse;
+        int[][] schedule = new int[timeslots][classrooms];
+        int aux = 0;
+        int randCourse = 0;
+        Map<Integer, Integer> coursesMap = new HashMap<Integer, Integer>();
+        for (int i = 1; i <= courses; i++) {
+            coursesMap.put(i, coursesCount[i - 1]);
+        }
+        for (int t = 0; t < timeslots; t++) {
+            for (int cl = 0; cl < classrooms; cl++) {
+                aux = 0;
+                while (aux == 0) {
+                    randCourse = ThreadLocalRandom.current().nextInt(courses) + 1;
+                    aux = coursesMap.getOrDefault(randCourse, 0);
+                }
+                schedule[t][cl] = randCourse;
+                coursesMap.put(randCourse, coursesMap.get(randCourse) - 1);
+                if (coursesMap.get(randCourse) == 0)
+                    coursesMap.remove(randCourse);
+                else {
+                    schedule[timeslots - 1 - t][classrooms - 1 - cl] = randCourse;
                     coursesMap.put(randCourse, coursesMap.get(randCourse) - 1);
                     if (coursesMap.get(randCourse) == 0)
                         coursesMap.remove(randCourse);
-                    else {
-                        schedule[timeslots - 1 - t][classrooms - 1 - cl] = randCourse;
-                        coursesMap.put(randCourse, coursesMap.get(randCourse) - 1);
-                        if (coursesMap.get(randCourse) == 0)
-                            coursesMap.remove(randCourse);
-                    }
-                    if (coursesMap.isEmpty())
-                        return schedule;
                 }
+                if (coursesMap.isEmpty())
+                    return schedule;
             }
-            s = new Solution(schedule);
-            System.out.println(s);
-            System.out.println();
-            System.exit(-1);
-        } while (!e.checkFeasibleLectures(s) || !e.checkNumberOfLectures(s));
+        }
         
         return schedule;
     }

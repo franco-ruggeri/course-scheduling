@@ -10,8 +10,8 @@ import generator.Solution;
 /**
  * Represents a chromosome of the population for GA. The correspondent solution
  * is a valid schedule, i.e. there is at most 1 lecture per course in the same
- * time slot. However, a right number of lectures for the courses is not
- * guaranteed.
+ * time slot. However, it is not guaranteed that all courses have enough
+ * lectures (they could have less).
  * 
  * Notice, once again, that here 'valid' means that one course cannot have more
  * than one lecture in the same time slot, i.e. there cannot be infeasible
@@ -100,10 +100,6 @@ public class Chromosome {
 	/**
 	 * Compute the fitness value of the chromosome.
 	 * 
-	 * It considers the following factors:
-	 * - number of lectures for the courses similar to the desired ones.
-	 * - number of overlaps for students.
-	 * 
 	 * Notice that the fitness value must not be negative for a correct selection in
 	 * GA.
 	 * 
@@ -138,9 +134,7 @@ public class Chromosome {
 	}
 	
 	/**
-	 * Repairs the chromosome, in order to make it valid. This is achieved by
-	 * canceling invalid lectures. A lecture is invalid if there is already another
-	 * lecture of the same course in the same time slot.
+	 * Repairs the chromosome, canceling infeasible and excess lectures.
 	 */
 	private void repair() {
 		int timeslotCount = problem.getTimeslotsCount();
@@ -148,8 +142,10 @@ public class Chromosome {
         int courseCount = problem.getCourseCount();
 		int[][] schedule = solution.getSchedule();
 		boolean[] lectureInTimeslot = new boolean[problem.getCourseCount()];
+		int[] scheduledLecturesCount = new int[courseCount];
+		int[] desiredLecturesCount = problem.getLecturesPerCourse();
 		
-		// repair
+		// cancel infeasible lectures
 		for (int t=0; t<timeslotCount; t++) {
 			for (int cl=0; cl<classroomCount; cl++) {
 				// mutation can cause an invalid course ID
@@ -164,6 +160,19 @@ public class Chromosome {
 				}
 			}
 			Arrays.fill(lectureInTimeslot, false);
+		}
+		
+		// cancel excess lectures
+		for (int t=0; t<timeslotCount; t++) {
+			for (int cl=0; cl<classroomCount; cl++) {
+				int course = schedule[t][cl];
+				if (schedule[t][cl] > 0) {
+					scheduledLecturesCount[course-1]++;
+					// cancel if there are already enough lectures for this course
+					if (scheduledLecturesCount[course-1] > desiredLecturesCount[course-1])
+						schedule[t][cl] = 0;
+				}
+			}
 		}
 		
 		// refresh

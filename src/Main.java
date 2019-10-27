@@ -68,7 +68,7 @@ public class Main {
 		int percentageInfeasibleLectures;
 		int percentageScheduledLectures;
 		int percentageOverlaps;
-		int adequateNumberOfLectures;
+		int percentageCoursesWithRightNumberOfLectures;
 	}
 	
     public static void main(String[] args) {
@@ -101,7 +101,7 @@ public class Main {
                 // create solvers
                 performance.get("Simulated Annealing").solver = new Annealing(10000000, .01, problem, evaluator);
                 performance.get("Genetic Algorithm").solver = new Genetic(problem, evaluator, 100, 0.05, Integer.MAX_VALUE, 10000);;
-//                performance.get("ILP").solver = new ILP(problem);
+                performance.get("ILP").solver = new ILP(problem);
                 
                 // solve and fill performance
                 System.out.println("Solving problem set " + i + " test case " + j + "...");
@@ -124,7 +124,7 @@ public class Main {
                     p.percentageInfeasibleLectures += evaluator.percentageInfeasibleLectures(solution);
                     p.percentageScheduledLectures += evaluator.percentageScheduledLectures(solution);
                     p.percentageOverlaps += evaluator.percentageOverlaps(solution);
-                    p.adequateNumberOfLectures += evaluator.checkNumberOfLectures(solution) ? 1 : 0;
+                    p.percentageCoursesWithRightNumberOfLectures += evaluator.percentageCoursesWithRightNumberOfLectures(solution);
                 }
     		}
     		
@@ -135,6 +135,7 @@ public class Main {
     			p.percentageInfeasibleLectures /= TEST_CASES;
     			p.percentageOverlaps /= TEST_CASES;
     			p.percentageScheduledLectures /= TEST_CASES;
+    			p.percentageCoursesWithRightNumberOfLectures /= TEST_CASES;
     		});
     		
     		// save performance
@@ -158,7 +159,7 @@ public class Main {
                 writer.println("Percentage infeasible lectures: " + p.percentageInfeasibleLectures);
                 writer.println("Percentage scheduled lectures: " + p.percentageScheduledLectures);
                 writer.println("Percentage overlaps: " + p.percentageOverlaps);
-                writer.println("Adequate number of lectures: " + p.adequateNumberOfLectures + " out of " + TEST_CASES);
+                writer.println("Percentage courses with right number of lectures: " + p.percentageCoursesWithRightNumberOfLectures);
                 writer.println();
     		}
         } catch (IOException e) {
