@@ -21,7 +21,7 @@ public class Main {
 	private static final int TEST_CASES = 5;	// test cases for each problem set
 	
 	// each generator represents a problem set
-	private static final Generator[] generators = new Generator[] {
+	private static final Generator[] GENERATORS = new Generator[] {
 		new Generator(
 			new int[] { 10, 15 }, 	// students
 	        new int[] { 7, 10 }, 	// courses
@@ -74,7 +74,7 @@ public class Main {
     	// create output folder
     	new File("output/").mkdir();
     	
-    	for (int i=0; i<generators.length; i++) {
+    	for (int i=0; i<GENERATORS.length; i++) {
     		Map<String, Performance> performance = new HashMap<>();
     		performance.put("Simulated Annealing", new Performance());
     		performance.put("Genetic Algorithm", new Performance());
@@ -83,7 +83,7 @@ public class Main {
     		for (int j=0; j<TEST_CASES; j++) {
     			// generate problem
             	System.out.println("Generating problem...");
-                Problem problem = generators[i].generate();
+                Problem problem = GENERATORS[i].generate();
                 saveProblem(problem, "output/problem_" + i + "_" + j + ".txt");
                 System.out.println("Problem generated and saved");
                 Evaluator evaluator = new Evaluator(problem);
@@ -128,7 +128,9 @@ public class Main {
     		});
     		
     		// save performance
+    		System.out.println("Saving performance...");
     		savePerformance(performance, "output/performance_" + i + ".txt");
+    		System.out.println("Performance saved");
     	}
     }
     
