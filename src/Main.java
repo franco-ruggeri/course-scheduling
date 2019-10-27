@@ -1,4 +1,6 @@
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,7 +71,7 @@ public class Main {
 	}
 	
     public static void main(String[] args) {
-    	
+    	// create output folder
     	new File("output/").mkdir();
     	
     	for (int i=0; i<generators.length; i++) {
@@ -89,18 +91,20 @@ public class Main {
                 // create solvers
                 performance.get("Simulated Annealing").solver = new Annealing(10000000, .01, problem, evaluator);
                 performance.get("Genetic Algorithm").solver = new Genetic(problem, evaluator, 100, 0.05, Integer.MAX_VALUE, 10000);;
-                performance.get("ILP").solver = new ILP(problem);
+//                performance.get("ILP").solver = new ILP(problem);
                 
                 // solve and fill performance
-                System.out.println("Solving...");
-                for (Performance p : performance.values()) {
+                System.out.println("Solving problem set " + i + " test case " + j + "...");
+                for (Map.Entry<String, Performance> e : performance.entrySet()) {
+                	String solverName = e.getKey();
+                	Performance p = e.getValue();
                 	if (p.solver == null)
                 		continue;
                 	
                 	// solve
                     long start = System.currentTimeMillis();
                     Solution solution = p.solver.solve();
-                    System.out.println("Solution found");
+                    System.out.println(solverName + " completed");
                     saveSolution(solution, problem, "output/solution_" + p.solver.getClass().getSimpleName().toLowerCase().replaceAll(" ", "_") + "_" + i + "_" + j + ".csv");
                     long end = System.currentTimeMillis();
                     
@@ -114,38 +118,51 @@ public class Main {
                 }
     		}
     		
-    		// print average performance
-    		performance.entrySet().stream().forEach(e -> {
+    		// take average
+    		performance.values().stream().forEach(p -> {
+    			p.time /= TEST_CASES;
+    			p.score /= TEST_CASES;
+    			p.percentageInfeasibleLectures /= TEST_CASES;
+    			p.percentageOverlaps /= TEST_CASES;
+    			p.percentageScheduledLectures /= TEST_CASES;
+    		});
+    		
+    		// save performance
+    		savePerformance(performance, "output/performance_" + i + ".txt");
+    	}
+    }
+    
+    private static void savePerformance(final Map<String, Performance> performance, final String loc) {
+    	try (PrintWriter writer = new PrintWriter(new FileWriter(loc, true))) {
+    		for (Map.Entry<String, Performance> e : performance.entrySet()) {
     			String solverName = e.getKey();
     			Performance p = e.getValue();
-    			
-    			System.out.println();
-                System.out.println("Solver: " + solverName);
-                System.out.println("Time: " + p.time / (TEST_CASES*1000) + " seconds");
-                System.out.println("Score: " + p.score / TEST_CASES);
-                System.out.println("Percentage infeasible lectures: " + p.percentageInfeasibleLectures / TEST_CASES);
-                System.out.println("Percentage scheduled lectures: " + p.percentageScheduledLectures / TEST_CASES);
-                System.out.println("Percentage overlaps: " + p.percentageOverlaps / TEST_CASES);
-                System.out.println("Adequate number of lectures: " + p.adequateNumberOfLectures + " out of " + TEST_CASES);
-    		});
-    		System.out.println();
-    	}
+
+                writer.println("Solver: " + solverName);
+                writer.println("Time: " + p.time / (TEST_CASES*1000) + " seconds");
+                writer.println("Score: " + p.score / TEST_CASES);
+                writer.println("Percentage infeasible lectures: " + p.percentageInfeasibleLectures / TEST_CASES);
+                writer.println("Percentage scheduled lectures: " + p.percentageScheduledLectures / TEST_CASES);
+                writer.println("Percentage overlaps: " + p.percentageOverlaps / TEST_CASES);
+                writer.println("Adequate number of lectures: " + p.adequateNumberOfLectures + " out of " + TEST_CASES);
+                writer.println();
+    		}
+        } catch (IOException e) {
+        	e.printStackTrace();
+        }
     }
 
     private static void saveSolution(final Solution s, final Problem p, final String loc) {
-        try {
-            PrintWriter writer = new PrintWriter(loc, "UTF-8");
+        try (PrintWriter writer = new PrintWriter(loc)) {
             final int[][] a = s.getSchedule();
             writer.print(intArrayToHuman(a, p.getDays(), p.getHoursPerDay()));
-            writer.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private static void saveProblem(final Problem p, final String loc) {
-        try {
-            PrintWriter writer = new PrintWriter(loc, "UTF-8");
+    	try (PrintWriter writer = new PrintWriter(loc)) {
             writer.println("students, courses, timeslots, classrooms");
             writer.println(p.getStudentCount() + " " + p.getCourseCount() + " " + p.getTimeslotsCount() + " "
                     + p.getClassroomCount() + "\n");

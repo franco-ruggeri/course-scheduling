@@ -65,8 +65,8 @@ public class Genetic implements Solver {
 	    	
 	    	// terminate when time runs out or when a good-enough chromosome has been found
 	    	elapsedTime = System.currentTimeMillis() - startTime;
-	    	System.err.println("Elapsed time: " + elapsedTime);
-	    	System.err.println("Best fitness value: " + maxFitnessValue);
+//	    	System.err.println("Elapsed time: " + elapsedTime);
+//	    	System.err.println("Best fitness value: " + maxFitnessValue);
 		} while (elapsedTime < maxTime && maxFitnessValue < enoughFitness);
     	
 	    return bestChromosome.getSolution();
