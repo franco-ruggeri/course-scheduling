@@ -101,7 +101,7 @@ public class Main {
                 // create solvers
                 performance.get("Simulated Annealing").solver = new Annealing(10000000, .01, problem, evaluator);
                 performance.get("Genetic Algorithm").solver = new Genetic(problem, evaluator, 100, 0.05, Integer.MAX_VALUE, 10000);;
-                performance.get("ILP").solver = new ILP(problem);
+//                performance.get("ILP").solver = new ILP(problem);
                 
                 // solve and fill performance
                 System.out.println("Solving problem set " + i + " test case " + j + "...");
@@ -130,7 +130,7 @@ public class Main {
     		
     		// take average
     		performance.values().stream().forEach(p -> {
-    			p.time /= TEST_CASES;
+    			p.time /= (TEST_CASES*1000);	// also converts to seconds
     			p.score /= TEST_CASES;
     			p.percentageInfeasibleLectures /= TEST_CASES;
     			p.percentageOverlaps /= TEST_CASES;
@@ -153,11 +153,11 @@ public class Main {
     				continue;
 
                 writer.println("Solver: " + solverName);
-                writer.println("Time: " + p.time / (TEST_CASES*1000) + " seconds");
-                writer.println("Score: " + p.score / TEST_CASES);
-                writer.println("Percentage infeasible lectures: " + p.percentageInfeasibleLectures / TEST_CASES);
-                writer.println("Percentage scheduled lectures: " + p.percentageScheduledLectures / TEST_CASES);
-                writer.println("Percentage overlaps: " + p.percentageOverlaps / TEST_CASES);
+                writer.println("Time: " + p.time + " seconds");
+                writer.println("Score: " + p.score);
+                writer.println("Percentage infeasible lectures: " + p.percentageInfeasibleLectures);
+                writer.println("Percentage scheduled lectures: " + p.percentageScheduledLectures);
+                writer.println("Percentage overlaps: " + p.percentageOverlaps);
                 writer.println("Adequate number of lectures: " + p.adequateNumberOfLectures + " out of " + TEST_CASES);
                 writer.println();
     		}
