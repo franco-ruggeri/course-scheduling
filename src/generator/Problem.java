@@ -53,11 +53,11 @@ public class Problem {
         this.lecturesPerCourse = new int[courseCount];
     }
     
-    public Problem(final int studentCount, final int courseCount, final int days, final int hoursPerDay,
+    public Problem(final int studentCount, final int courseCount, final int days, final int timeslotsPerDay,
             final int classroomCount, final int[][] students, final int[] lecturesPerCourse) {
         this.dayCount = days;
-        this.timeslotsPerDay = hoursPerDay;
-        this.timeslotsCount = days * hoursPerDay;
+        this.timeslotsPerDay = timeslotsPerDay;
+        this.timeslotsCount = days * timeslotsPerDay;
         this.classroomCount = classroomCount;
         this.studentCount = studentCount;
         this.courseCount = courseCount;

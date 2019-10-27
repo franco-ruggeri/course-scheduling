@@ -27,7 +27,7 @@ public class Main {
 	private static final boolean ILP = true;
 	
 	// test case for ILP, used when ILP=true
-	private static final String ILP_PROBLEM = "problem_0_0.txt";
+	private static final String ILP_PROBLEM = "problem_0_1.txt";
 	
 	// output folder
 	private static final String OUTPUT_DIR = "output/";
@@ -103,17 +103,17 @@ public class Main {
 			saveSolution(solution, problem, OUTPUT_DIR + "solution_" + endName + ".csv");
     		
     		// get performance
-    		performance.time += end - start;
-            performance.score += evaluator.evaluate(solution);
-            performance.percentageInfeasibleLectures += evaluator.percentageInfeasibleLectures(solution);
-            performance.percentageScheduledLectures += evaluator.percentageScheduledLectures(solution);
-            performance.percentageOverlaps += evaluator.percentageOverlaps(solution);
-            performance.percentageCoursesWithRightNumberOfLectures += evaluator.percentageCoursesWithRightNumberOfLectures(solution);
+    		performance.time = (end - start) / 1000;
+            performance.score = evaluator.evaluate(solution);
+            performance.percentageInfeasibleLectures = evaluator.percentageInfeasibleLectures(solution);
+            performance.percentageScheduledLectures = evaluator.percentageScheduledLectures(solution);
+            performance.percentageOverlaps = evaluator.percentageOverlaps(solution);
+            performance.percentageCoursesWithRightNumberOfLectures = evaluator.percentageCoursesWithRightNumberOfLectures(solution);
             
             // save performance
             Map<String, Performance> pMap = new HashMap<>();
             pMap.put("ILP", performance);
-            savePerformance(pMap, OUTPUT_DIR + "performance_" + endName + ".txt");
+            savePerformance(pMap, OUTPUT_DIR + "performance_" + endName + ".txt", false);
             
     		return;
     	}
@@ -179,13 +179,13 @@ public class Main {
     		
     		// save performance
     		System.out.println("Saving performance...");
-    		savePerformance(performance, "output/performance_" + i + ".txt");
+    		savePerformance(performance, "output/performance_" + i + ".txt", true);
     		System.out.println("Performance saved");
     	}
     }
     
-    private static void savePerformance(final Map<String, Performance> performance, final String loc) {
-    	try (PrintWriter writer = new PrintWriter(new FileWriter(loc, true))) {
+    private static void savePerformance(final Map<String, Performance> performance, final String loc, final boolean append) {
+    	try (PrintWriter writer = new PrintWriter(new FileWriter(loc, append))) {
     		for (Map.Entry<String, Performance> e : performance.entrySet()) {
     			String solverName = e.getKey();
     			Performance p = e.getValue();
@@ -289,7 +289,7 @@ public class Main {
     		scanner.close();
     		
     		// return problem
-    		return new Problem(studentCount, courseCount, dayCount, timeslotsPerDay, classroomCount);
+    		return new Problem(studentCount, courseCount, dayCount, timeslotsPerDay, classroomCount, students, lecturesPerCourse);
     	}
     }
 
