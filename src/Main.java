@@ -23,17 +23,21 @@ import solvers.lp.ILP;
  * Main class to run test cases and compare algorithms
  */
 public class Main {
-	// true => ILP on already generated problem, false => generate problems and run GA and SA
+	/*
+	 * You need to touch only this the following two constants.
+	 * 
+	 * ILP: true to run ILP on a already-generated problem, false to generate
+	 * problems and run GA and SA.
+	 * 
+	 * ILP_PROBLEM: if ILP=true, it indicates the name of the file containing the
+	 * problem. The files are output in the following format: "problem_i_j.txt",
+	 * where i is the problem set and j the test case.
+	 */
 	private static final boolean ILP = true;
-	
-	// test case for ILP, used when ILP=true
 	private static final String ILP_PROBLEM = "problem_0_1.txt";
 	
-	// output folder
 	private static final String OUTPUT_DIR = "output/";
-	
-	// number of test cases for each problem set, generated when ILP=false
-	private static final int TEST_CASES = 5;
+	private static final int TEST_CASES = 5;	// number of test cases for each problem set, generated when ILP=false
 	
 	// each generator represents a problem set
 	private static final Generator[] GENERATORS = new Generator[] {
@@ -95,15 +99,14 @@ public class Main {
     		Evaluator evaluator = new Evaluator(problem);
     		Performance performance = new Performance();
     		performance.solver = new ILP(problem);
-    		String endName = performance.solver.getClass().getSimpleName() + "_"
-					+ ILP_PROBLEM.split("_")[1] + "_" + ILP_PROBLEM.split("_")[2].replace(".txt", "");
+    		String endName = "ilp_" + ILP_PROBLEM.split("_")[1] + "_" + ILP_PROBLEM.split("_")[2].replace(".txt", "");
     		long start = System.currentTimeMillis();
     		Solution solution = performance.solver.solve();
     		long end = System.currentTimeMillis();
 			saveSolution(solution, problem, OUTPUT_DIR + "solution_" + endName + ".csv");
     		
     		// get performance
-    		performance.time = (end - start) / 1000;
+    		performance.time = end - start;
             performance.score = evaluator.evaluate(solution);
             performance.percentageInfeasibleLectures = evaluator.percentageInfeasibleLectures(solution);
             performance.percentageScheduledLectures = evaluator.percentageScheduledLectures(solution);
@@ -169,7 +172,7 @@ public class Main {
     		
     		// take average
     		performance.values().stream().forEach(p -> {
-    			p.time /= (TEST_CASES*1000);	// also converts to seconds
+    			p.time /= TEST_CASES;
     			p.score /= TEST_CASES;
     			p.percentageInfeasibleLectures /= TEST_CASES;
     			p.percentageOverlaps /= TEST_CASES;
@@ -193,7 +196,7 @@ public class Main {
     				continue;
 
                 writer.println("Solver: " + solverName);
-                writer.println("Time: " + p.time + " seconds");
+                writer.println("Time: " + p.time + " milliseconds");
                 writer.println("Score: " + p.score);
                 writer.println(String.format("Percentage infeasible lectures: %.2f", p.percentageInfeasibleLectures));
                 writer.println(String.format("Percentage scheduled lectures: %.2f", p.percentageScheduledLectures));

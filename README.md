@@ -22,7 +22,7 @@ On Windows:
    + Generate problems and run GA + Simulated Annealing: set flag *ILP=false*
    + Run ILP on a generated problem: set flag *ILP=true* and *ILP_PROBLEM=<filename_problem>* (e.g. *problem_0_0.txt*)
 
-On Ubuntu, you can follow the same steps, but the ILP libraries may you give some problems, if they do, please make sure to run only with the flag *ILP=true*.
+On Ubuntu, you can follow the same steps, but the ILP libraries may give you some problems. In that case, you can anyway run the other algorithms by by setting the flag *ILP=true*.
 
 *Remark*: ILP takes a while to finish and in some test cases does not converge. This is the reason why it is run a part and not together with the other algorithms. You should stop manually after a predefined amount of time.
 
@@ -32,7 +32,7 @@ On Ubuntu, you can follow the same steps, but the ILP libraries may you give som
 ## Customized run
 
 ### Generate a new problem
-In order to create a new problem, you need a Generator. The Generator accepts a range of parameters and creates a valid problem choosing random numbers within those ranges. This can be done using the method *generate()*.
+In order to create a new problem, you need a *Generator*. The Generator accepts a range of parameters and creates a valid problem choosing random numbers within those ranges. This can be done using the method *generate()*.
 
 The suggested way is to modify the code in the *Main* class.
 
