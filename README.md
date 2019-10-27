@@ -18,15 +18,13 @@ On Windows:
 * Import the project into an IDE (e.g. Eclipse, IntelliJ)
 * Add the external jars in *src/solvers/lp/* to the build path
    + In Eclipse: right click on the project -> build path -> configure build path -> tab libraries -> add jars
-* Run the Main class
+* Run the Main class in one of the following configurations:
+   + Generate problems and run GA + Simulated Annealing: set flag *ILP=false*
+   + Run ILP on a generated problem: set flag *ILP=true* and *ILP_PROBLEM=<filename_problem>* (e.g. *problem_0_0.txt*)
 
-On Ubuntu, you can follow the same steps, but the ILP libraries give some problems. To run the code without ILP, just comment line 91 of the *Main* class.
+On Ubuntu, you can follow the same steps, but the ILP libraries give some problems, so make sure to run only with the flag *ILP=true*.
 
-*Remark*: ILP takes a while to finish and in some test cases does not converge. So, we suggest to use it in isolation:
-* When running SA and GA, comment line 91 of the *Main* class
-* When running ILP:
-   + comment lines 89-90 of the *Main* class
-   + enable one Generator at a time commenting lines 26-60 of the *Main* class (not all obviously, you need one generator)
+*Remark*: ILP takes a while to finish and in some test cases does not converge. This is the reason why it is run a part and not together with the other algorithms. You should stop manually after a predefined amount of time.
 
 ## Output
 * Problems, solutions and performance will be saved into a subfolder called *output*.
