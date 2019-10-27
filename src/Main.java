@@ -19,6 +19,7 @@ import solvers.lp.ILP;
  */
 public class Main {
 	private static final int TEST_CASES = 5;	// test cases for each problem set
+	private static final String OUTPUT_DIR = "output/";
 	
 	// each generator represents a problem set
 	private static final Generator[] GENERATORS = new Generator[] {
@@ -71,8 +72,17 @@ public class Main {
 	}
 	
     public static void main(String[] args) {
-    	// create output folder
-    	new File("output/").mkdir();
+    	// prepare output folder
+    	File directory = new File(OUTPUT_DIR);
+    	if (directory.exists()) {
+    		// clean
+    		String[] entries = directory.list();
+    		for (String file : entries)
+    			new File(directory.getPath(), file).delete();
+    	} else {
+    		// create
+    		directory.mkdir();
+    	}
     	
     	for (int i=0; i<GENERATORS.length; i++) {
     		Map<String, Performance> performance = new HashMap<>();
@@ -91,7 +101,7 @@ public class Main {
                 // create solvers
                 performance.get("Simulated Annealing").solver = new Annealing(10000000, .01, problem, evaluator);
                 performance.get("Genetic Algorithm").solver = new Genetic(problem, evaluator, 100, 0.05, Integer.MAX_VALUE, 10000);;
-//                performance.get("ILP").solver = new ILP(problem);
+                performance.get("ILP").solver = new ILP(problem);
                 
                 // solve and fill performance
                 System.out.println("Solving problem set " + i + " test case " + j + "...");
