@@ -13,16 +13,18 @@ Packages:
 * generator: contains general classes useful to generate the code and evaluate the solutions
 * solvers: contains the implementation of the algorithms
 
-## How to run test cases
+## How to run the test cases
+On Windows:
 * Import the project into an IDE (e.g. Eclipse, IntelliJ)
-* Add the external jars in *src/solvers/lp/* to the build path (from: SCPSolver; http://scpsolver.org/)
+* Add the external jars in *src/solvers/lp/* to the build path
+   + In Eclipse: right click on the project -> build path -> configure build path -> tab libraries -> add jars
 * Run the Main class
-   
-Adding external jars to intellij: https://stackoverflow.com/questions/1051640/correct-way-to-add-external-jars-lib-jar-to-an-intellij-idea-project
-If having the undefined symbol problem on ubuntu: https://github.com/draeger-lab/SBSCL/issues/5 [libglpkjni_x64 file can be found alongside the jars]
+
+On Ubuntu, you can follow the same steps, but the ILP libraries give some problems. To run the code without ILP, just comment line 92 of the *Main* class.
 
 ## Output
-The problems and the solutions will be generated into a subfolder called *output*.
+* The problems and the solutions will be generated into a subfolder called *output*.
+* The performance of the different algorithms are output on the console at the end of all the test cases (with ILP, it takes a while).
 
 ## Customized run
 
