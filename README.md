@@ -22,7 +22,7 @@ On Windows:
    + Generate problems and run GA + Simulated Annealing: set flag *ILP=false*
    + Run ILP on a generated problem: set flag *ILP=true* and *ILP_PROBLEM=<filename_problem>* (e.g. *problem_0_0.txt*)
 
-On Ubuntu, you can follow the same steps, but the ILP libraries give some problems, so make sure to run only with the flag *ILP=true*.
+On Ubuntu, you can follow the same steps, but the ILP libraries may you give some problems, if they do, please make sure to run only with the flag *ILP=true*.
 
 *Remark*: ILP takes a while to finish and in some test cases does not converge. This is the reason why it is run a part and not together with the other algorithms. You should stop manually after a predefined amount of time.
 
