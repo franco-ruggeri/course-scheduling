@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /*
  * Represents a problem as a set of parameters. Some data structures are also 
@@ -40,16 +41,32 @@ public class Problem {
     private final int dayCount; 		// number of days of the schedule
     private final int timeslotsPerDay; 	// number of time slots per day
 
-    public Problem(final int studentCount, final int courseCount, final int days, final int hoursPerDay,
-            final int classRoomCount) {
-        this.dayCount = days;
-        this.timeslotsPerDay = hoursPerDay;
-        this.timeslotsCount = days * hoursPerDay;
-        this.classroomCount = classRoomCount;
+    public Problem(final int studentCount, final int courseCount, final int dayCount, final int timeslotsPerDay,
+            final int classroomCount) {
+        this.dayCount = dayCount;
+        this.timeslotsPerDay = timeslotsPerDay;
+        this.timeslotsCount = dayCount * timeslotsPerDay;
+        this.classroomCount = classroomCount;
         this.studentCount = studentCount;
         this.courseCount = courseCount;
         this.students = new int[studentCount][];
         this.lecturesPerCourse = new int[courseCount];
+    }
+    
+    public Problem(final int studentCount, final int courseCount, final int days, final int hoursPerDay,
+            final int classroomCount, final int[][] students, final int[] lecturesPerCourse) {
+        this.dayCount = days;
+        this.timeslotsPerDay = hoursPerDay;
+        this.timeslotsCount = days * hoursPerDay;
+        this.classroomCount = classroomCount;
+        this.studentCount = studentCount;
+        this.courseCount = courseCount;
+        this.students = students;
+        this.lecturesPerCourse = lecturesPerCourse;
+        for (int[] group : students) {
+            List<Integer> key = Arrays.stream(group).boxed().collect(Collectors.toList());
+            this.studentGroups.put(key, studentGroups.getOrDefault(key, 0) + 1);
+        }
     }
     
 	/**
@@ -107,39 +124,40 @@ public class Problem {
      * Getters
      */
     
-    public int getCourseCount() {
-        return courseCount;
-    }
+	public int getTimeslotsCount() {
+		return timeslotsCount;
+	}
 
-    public int getTimeslotsCount() {
-        return timeslotsCount;
-    }
+	public int getClassroomCount() {
+		return classroomCount;
+	}
 
-    public int getClassroomCount() {
-        return classroomCount;
-    }
+	public int getStudentCount() {
+		return studentCount;
+	}
 
-    public int[][] getStudents() {
-        return students;
-    }
+	public int getCourseCount() {
+		return courseCount;
+	}
 
-    public int[] getLecturesPerCourse() {
-        return lecturesPerCourse;
-    }
+	public int[] getLecturesPerCourse() {
+		return lecturesPerCourse;
+	}
 
-    public int getStudentCount() {
-        return studentCount;
-    }
+	public int[][] getStudents() {
+		return students;
+	}
 
-    public Map<List<Integer>, Integer> getStudentGroups() {
-        return studentGroups;
-    }
+	public Map<List<Integer>, Integer> getStudentGroups() {
+		return studentGroups;
+	}
 
-    public int getDays() {
-        return dayCount;
-    }
+	public int getDayCount() {
+		return dayCount;
+	}
 
-    public int getHoursPerDay() {
-        return timeslotsPerDay;
-    }
+	public int getTimeslotsPerDay() {
+		return timeslotsPerDay;
+	}
+	
 }

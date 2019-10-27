@@ -1,9 +1,14 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import generator.Evaluator;
 import generator.Generator;
@@ -18,8 +23,17 @@ import solvers.lp.ILP;
  * Main class to run test cases and compare algorithms
  */
 public class Main {
-	private static final int TEST_CASES = 5;	// test cases for each problem set
+	// true => ILP on already generated problem, false => generate problems and run GA and SA
+	private static final boolean ILP = false;
+	
+	// test case for ILP, used when ILP=true
+	private static final String ILP_PROBLEM = "problem_0_0.txt";
+	
+	// output folder
 	private static final String OUTPUT_DIR = "output/";
+	
+	// number of test cases for each problem set, generated when ILP=false
+	private static final int TEST_CASES = 5;
 	
 	// each generator represents a problem set
 	private static final Generator[] GENERATORS = new Generator[] {
@@ -71,24 +85,48 @@ public class Main {
 		double percentageCoursesWithRightNumberOfLectures;
 	}
 	
-    public static void main(String[] args) {
-    	// prepare output folder
-    	File directory = new File(OUTPUT_DIR);
-    	if (directory.exists()) {
-    		// clean
-    		String[] entries = directory.list();
-    		for (String file : entries)
-    			new File(directory.getPath(), file).delete();
-    	} else {
-    		// create
-    		directory.mkdir();
+    public static void main(String[] args) throws IOException {
+    	/*
+    	 * ILP on a generated test case.
+    	 */
+    	if (ILP) {
+    		// solve
+    		Problem problem = readProblem(OUTPUT_DIR + ILP_PROBLEM);
+    		Evaluator evaluator = new Evaluator(problem);
+    		Performance performance = new Performance();
+    		performance.solver = new ILP(problem);
+    		String endName = performance.solver.getClass().getSimpleName()
+					+ ILP_PROBLEM.split("_")[1] + ILP_PROBLEM.split(" ")[2] + ".csv";
+    		long start = System.currentTimeMillis();
+    		Solution solution = performance.solver.solve();
+    		long end = System.currentTimeMillis();
+			saveSolution(solution, problem, OUTPUT_DIR + "solution_" + endName);
+    		
+    		// get performance
+    		performance.time += end - start;
+            performance.score += evaluator.evaluate(solution);
+            performance.percentageInfeasibleLectures += evaluator.percentageInfeasibleLectures(solution);
+            performance.percentageScheduledLectures += evaluator.percentageScheduledLectures(solution);
+            performance.percentageOverlaps += evaluator.percentageOverlaps(solution);
+            performance.percentageCoursesWithRightNumberOfLectures += evaluator.percentageCoursesWithRightNumberOfLectures(solution);
+            
+            // save performance
+            Map<String, Performance> pMap = new HashMap<>();
+            pMap.put("ILP", performance);
+            savePerformance(pMap, OUTPUT_DIR + "performance_" + endName);
+            
+    		return;
     	}
     	
+    	
+    	/*
+    	 * Generate test cases and run all algorithms but ILP.
+    	 */
+    	prepareOutputFolder(OUTPUT_DIR);
     	for (int i=0; i<GENERATORS.length; i++) {
     		Map<String, Performance> performance = new HashMap<>();
     		performance.put("Simulated Annealing", new Performance());
     		performance.put("Genetic Algorithm", new Performance());
-    		performance.put("ILP", new Performance());
     		
     		for (int j=0; j<TEST_CASES; j++) {
     			// generate problem
@@ -101,7 +139,6 @@ public class Main {
                 // create solvers
                 performance.get("Simulated Annealing").solver = new Annealing(10000000, .01, problem, evaluator);
                 performance.get("Genetic Algorithm").solver = new Genetic(problem, evaluator, 100, 0.05, Integer.MAX_VALUE, 10000);;
-//                performance.get("ILP").solver = new ILP(problem);
                 
                 // solve and fill performance
                 System.out.println("Solving problem set " + i + " test case " + j + "...");
@@ -115,7 +152,9 @@ public class Main {
                     long start = System.currentTimeMillis();
                     Solution solution = p.solver.solve();
                     System.out.println(solverName + " completed");
-                    saveSolution(solution, problem, "output/solution_" + p.solver.getClass().getSimpleName().toLowerCase().replaceAll(" ", "_") + "_" + i + "_" + j + ".csv");
+					saveSolution(solution, problem,
+							"output/solution_" + p.solver.getClass().getSimpleName().toLowerCase().replaceAll(" ", "_")
+									+ "_" + i + "_" + j + ".csv");
                     long end = System.currentTimeMillis();
                     
                     // update performance
@@ -170,7 +209,7 @@ public class Main {
     private static void saveSolution(final Solution s, final Problem p, final String loc) {
         try (PrintWriter writer = new PrintWriter(loc)) {
             final int[][] a = s.getSchedule();
-            writer.print(intArrayToHuman(a, p.getDays(), p.getHoursPerDay()));
+            writer.print(intArrayToHuman(a, p.getDayCount(), p.getTimeslotsPerDay()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -178,9 +217,9 @@ public class Main {
 
     private static void saveProblem(final Problem p, final String loc) {
     	try (PrintWriter writer = new PrintWriter(loc)) {
-            writer.println("students, courses, timeslots, classrooms");
-            writer.println(p.getStudentCount() + " " + p.getCourseCount() + " " + p.getTimeslotsCount() + " "
-                    + p.getClassroomCount() + "\n");
+            writer.println("students, courses, days, timeslots per day, classrooms");
+            writer.println(p.getStudentCount() + "," + p.getCourseCount() + "," + p.getDayCount() + ","
+                    + p.getTimeslotsPerDay() + "," + p.getClassroomCount() + "\n");
             writer.println("courses by student");
             writer.println(intArrayToString(p.getStudents()));
             writer.println("lessons by course");
@@ -190,7 +229,83 @@ public class Main {
             e.printStackTrace();
         }
     }
+    
+    private static Problem readProblem(final String loc) throws IOException {
+    	try (BufferedReader reader = new BufferedReader(new FileReader(loc))) {
+    		String line;
+    		Scanner scanner;
+    		int studentCount, courseCount, dayCount, timeslotsPerDay, classroomCount, students[][], lecturesPerCourse[];
+    		
+    		// skip first
+    		reader.readLine();
+    		
+    		// read counts
+    		line = reader.readLine();
+    		scanner = new Scanner(line);
+    		scanner.useDelimiter(",");
+    		studentCount = scanner.nextInt();
+    		courseCount = scanner.nextInt();
+    		dayCount = scanner.nextInt();
+    		timeslotsPerDay = scanner.nextInt();
+    		classroomCount = scanner.nextInt();
+    		scanner.close();
+    		
+    		// skip 2 lines
+    		reader.readLine();
+    		reader.readLine();
+    		
+    		// read students
+    		students = new int[studentCount][];
+    		for (int i=0; i<studentCount; i++) {
+    			// read line
+    			line = reader.readLine();
+    			scanner = new Scanner(line);
+    			scanner.useDelimiter(",");
+    			
+    			// get courses
+    			List<Integer> student = new LinkedList<>();
+    			while (scanner.hasNextInt())
+    				student.add(scanner.nextInt());
+    			scanner.close();
+    			
+    			// copy into array
+    			students[i] = new int[student.size()];
+    			int j =0;
+    			for (int course : student)
+    				students[i][j++] = course;
+    		}
+    		
+    		// skip 2 lines
+    		reader.readLine();
+    		reader.readLine();
+    		
+    		// read lectures per course
+    		lecturesPerCourse = new int[courseCount];
+    		line = reader.readLine();
+    		scanner = new Scanner(line);
+			scanner.useDelimiter(",");
+    		for (int i=0; i<courseCount; i++)
+    			lecturesPerCourse[i] = scanner.nextInt();
+    		scanner.close();
+    		
+    		// return problem
+    		return new Problem(studentCount, courseCount, dayCount, timeslotsPerDay, classroomCount);
+    	}
+    }
 
+    private static void prepareOutputFolder(final String log) {
+    	File directory = new File(OUTPUT_DIR);
+    	if (directory.exists()) {
+    		// clean
+    		String[] entries = directory.list();
+    		for (String file : entries)
+    			new File(directory.getPath(), file).delete();
+    	} else {
+    		// create
+    		directory.mkdir();
+    	}
+    }
+    
     private static String intArrayToString(final int[][] a) {
         final int len = a.length;
         String ans = "";
@@ -237,6 +352,15 @@ public class Main {
         ans = ans.substring(0, ans.length() - 1);
         ans += "\n";
         return ans;
+    }
+
+    static int[] stringToArray(String s) {
+        final String[] split = s.split(",");
+        final int[] a = new int[split.length];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = Integer.parseInt(split[i]);
+        }
+        return a;
     }
 
 }
