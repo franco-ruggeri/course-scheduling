@@ -24,7 +24,7 @@ import solvers.lp.ILP;
  */
 public class Main {
 	// true => ILP on already generated problem, false => generate problems and run GA and SA
-	private static final boolean ILP = false;
+	private static final boolean ILP = true;
 	
 	// test case for ILP, used when ILP=true
 	private static final String ILP_PROBLEM = "problem_0_0.txt";
@@ -95,12 +95,12 @@ public class Main {
     		Evaluator evaluator = new Evaluator(problem);
     		Performance performance = new Performance();
     		performance.solver = new ILP(problem);
-    		String endName = performance.solver.getClass().getSimpleName()
-					+ ILP_PROBLEM.split("_")[1] + ILP_PROBLEM.split(" ")[2] + ".csv";
+    		String endName = performance.solver.getClass().getSimpleName() + "_"
+					+ ILP_PROBLEM.split("_")[1] + "_" + ILP_PROBLEM.split("_")[2].replace(".txt", "");
     		long start = System.currentTimeMillis();
     		Solution solution = performance.solver.solve();
     		long end = System.currentTimeMillis();
-			saveSolution(solution, problem, OUTPUT_DIR + "solution_" + endName);
+			saveSolution(solution, problem, OUTPUT_DIR + "solution_" + endName + ".csv");
     		
     		// get performance
     		performance.time += end - start;
@@ -113,7 +113,7 @@ public class Main {
             // save performance
             Map<String, Performance> pMap = new HashMap<>();
             pMap.put("ILP", performance);
-            savePerformance(pMap, OUTPUT_DIR + "performance_" + endName);
+            savePerformance(pMap, OUTPUT_DIR + "performance_" + endName + ".txt");
             
     		return;
     	}
