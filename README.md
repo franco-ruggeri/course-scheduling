@@ -20,9 +20,13 @@ On Windows:
    + In Eclipse: right click on the project -> build path -> configure build path -> tab libraries -> add jars
 * Run the Main class
 
-On Ubuntu, you can follow the same steps, but the ILP libraries give some problems. To run the code without ILP, just comment line 92 of the *Main* class.
+On Ubuntu, you can follow the same steps, but the ILP libraries give some problems. To run the code without ILP, just comment line 91 of the *Main* class.
 
-*Remark*: ILP takes a while to finish.
+*Remark*: ILP takes a while to finish and in some test cases does not converge. So, we suggest to use it in isolation:
+* When running SA and GA, comment line 91 of the *Main* class
+* When running ILP:
+   + comment lines 89-90 of the *Main* class
+   + enable one Generator at a time commenting lines 26-60 of the *Main* class (not all obviously, you need one generator)
 
 ## Output
 * Problems, solutions and performance will be saved into a subfolder called *output*.
