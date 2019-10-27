@@ -65,10 +65,10 @@ public class Main {
 		Solver solver;
 		long time;
 		long score;
-		int percentageInfeasibleLectures;
-		int percentageScheduledLectures;
-		int percentageOverlaps;
-		int percentageCoursesWithRightNumberOfLectures;
+		double percentageInfeasibleLectures;
+		double percentageScheduledLectures;
+		double percentageOverlaps;
+		double percentageCoursesWithRightNumberOfLectures;
 	}
 	
     public static void main(String[] args) {
@@ -101,7 +101,7 @@ public class Main {
                 // create solvers
                 performance.get("Simulated Annealing").solver = new Annealing(10000000, .01, problem, evaluator);
                 performance.get("Genetic Algorithm").solver = new Genetic(problem, evaluator, 100, 0.05, Integer.MAX_VALUE, 10000);;
-                performance.get("ILP").solver = new ILP(problem);
+//                performance.get("ILP").solver = new ILP(problem);
                 
                 // solve and fill performance
                 System.out.println("Solving problem set " + i + " test case " + j + "...");
@@ -156,10 +156,10 @@ public class Main {
                 writer.println("Solver: " + solverName);
                 writer.println("Time: " + p.time + " seconds");
                 writer.println("Score: " + p.score);
-                writer.println("Percentage infeasible lectures: " + p.percentageInfeasibleLectures);
-                writer.println("Percentage scheduled lectures: " + p.percentageScheduledLectures);
-                writer.println("Percentage overlaps: " + p.percentageOverlaps);
-                writer.println("Percentage courses with right number of lectures: " + p.percentageCoursesWithRightNumberOfLectures);
+                writer.println(String.format("Percentage infeasible lectures: %.2f", p.percentageInfeasibleLectures));
+                writer.println(String.format("Percentage scheduled lectures: %.2f", p.percentageScheduledLectures));
+                writer.println(String.format("Percentage overlaps: %.2f", p.percentageOverlaps));
+                writer.println(String.format("Percentage courses with right number of lectures: %.2f", p.percentageCoursesWithRightNumberOfLectures));
                 writer.println();
     		}
         } catch (IOException e) {
