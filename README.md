@@ -22,9 +22,10 @@ On Windows:
 
 On Ubuntu, you can follow the same steps, but the ILP libraries give some problems. To run the code without ILP, just comment line 92 of the *Main* class.
 
+*Remark*: ILP takes a while to finish.
+
 ## Output
-* The problems and the solutions will be generated into a subfolder called *output*.
-* The performance of the different algorithms are output on the console at the end of all the test cases (with ILP, it takes a while).
+* Problems, solutions and performance will be saved into a subfolder called *output*.
 
 ## Customized run
 
