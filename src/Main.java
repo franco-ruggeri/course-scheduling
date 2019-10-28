@@ -33,7 +33,7 @@ public class Main {
 	 * problem. The files are output in the following format: "problem_i_j.txt",
 	 * where i is the problem set and j the test case.
 	 */
-	private static final boolean ILP = true;
+	private static final boolean ILP = false;
 	private static final String ILP_PROBLEM = "problem_0_1.txt";
 	
 	private static final String OUTPUT_DIR = "output/";
@@ -44,8 +44,8 @@ public class Main {
 		new Generator(
 			new int[] { 10, 15 }, 	// students
 	        new int[] { 7, 10 }, 	// courses
-	        new int[] { 1, 2 }, 	// days
-	        new int[] { 3, 15 }, 	// hoursPerDay
+	        new int[] { 1, 6 }, 	// days
+	        new int[] { 3, 5 }, 	// timeslotsPerDay
 	        new int[] { 3, 5 }, 	// classrooms
 	        new int[] { 3, 5 }, 	// rangeStudentsCourseCount
 	        new int[] { 3, 5 } 		// rangeCoursesLecturesCount
@@ -53,8 +53,8 @@ public class Main {
 		new Generator(
 			new int[] { 20, 30 }, 	// students
 	        new int[] { 7, 10 }, 	// courses
-	        new int[] { 1, 2 }, 	// days
-	        new int[] { 5, 15 }, 	// hoursPerDay
+	        new int[] { 1, 5 }, 	// days
+	        new int[] { 5, 6 }, 	// timeslotsPerDay
 	        new int[] { 3, 5 }, 	// classrooms
 	        new int[] { 3, 5 }, 	// rangeStudentsCourseCount
 	        new int[] { 3, 5 } 		// rangeCoursesLecturesCount
@@ -62,8 +62,8 @@ public class Main {
 		new Generator(
 			new int[] { 10, 15 }, 	// students
 	        new int[] { 7, 10 }, 	// courses
-	        new int[] { 1, 2 }, 	// days
-	        new int[] { 100, 200 }, // hoursPerDay
+	        new int[] { 20, 50 }, 	// days
+	        new int[] { 5, 8 }, 	// timeslotsPerDay
 	        new int[] { 3, 5 }, 	// classrooms
 	        new int[] { 3, 5 }, 	// rangeStudentsCourseCount
 	        new int[] { 3, 5 } 		// rangeCoursesLecturesCount
@@ -71,8 +71,8 @@ public class Main {
 		new Generator(
 			new int[] { 20, 30 }, 	// students
 	        new int[] { 7, 10 }, 	// courses
-	        new int[] { 1, 2 }, 	// days
-	        new int[] { 20, 30 }, 	// hoursPerDay
+	        new int[] { 5, 12 }, 	// days
+	        new int[] { 4, 5 }, 	// timeslotsPerDay
 	        new int[] { 5, 7 }, 	// classrooms
 	        new int[] { 3, 7 }, 	// rangeStudentsCourseCount
 	        new int[] { 5, 10 } 	// rangeCoursesLecturesCount
@@ -141,7 +141,7 @@ public class Main {
                 
                 // create solvers
                 performance.get("Simulated Annealing").solver = new Annealing(10000000, .01, problem, evaluator);
-                performance.get("Genetic Algorithm").solver = new Genetic(problem, evaluator, 100, 0.05, Integer.MAX_VALUE, 10000);;
+                performance.get("Genetic Algorithm").solver = new Genetic(problem, evaluator, 100, 0.05, Integer.MAX_VALUE, 30000);;
                 
                 // solve and fill performance
                 System.out.println("Solving problem set " + i + " test case " + j + "...");
@@ -325,7 +325,7 @@ public class Main {
 
     private static String intArrayToHuman(final int[][] a, final int days, final int hoursPerDay) {
         final int len2 = a[0].length;
-        String ans = "Day/Classroom,Hour";
+        String ans = "Day/Classroom,Timeslot";
         final String[] week = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
         for (int cl = 0; cl < len2; cl++) {
             ans += "," + (cl + 1);
