@@ -1,6 +1,13 @@
 # AI.A3.PR
 
 ## General info
+Project of Artificial Intelligence at KTH.
+
+* General topic: advanced planning
+* Specific topic: planning with limited resources
+* Case study: course scheduling in university
+* Algorithms: simulated annealing, genetic algorithm, linear programming
+
 Authors:
 * Dingli Mao
 * Arturo Rivas Rojas
@@ -10,7 +17,7 @@ Authors:
 ## Structure of the code
 Packages:
 * default package: contains the Main class to run the test cases
-* generator: contains general classes useful to generate the code and evaluate the solutions
+* generator: contains general classes useful to generate the problem and evaluate the solutions
 * solvers: contains the implementation of the algorithms
 
 ## How to run the test cases
@@ -27,7 +34,7 @@ On Ubuntu, you can follow the same steps, but the ILP libraries may give you som
 *Remark*: ILP takes a while to finish and in some test cases does not converge. This is the reason why it is run a part and not together with the other algorithms. You should stop manually after a predefined amount of time.
 
 ## Output
-* Problems, solutions and performance will be saved into a subfolder called *output*.
+Problems, solutions and performance will be saved into a subfolder called *output*.
 
 ## Customized run
 
